@@ -24,12 +24,6 @@ body {
   align-items: center;
 }
 
-@media (max-width: 560px) {
-  .nav-bar {
-     height: auto;
-    }
-}
-
 
 
 .glass-effect {
@@ -50,3 +44,4 @@ body {
 .font-roboto-mono {
   font-family: 'Roboto Mono', monospace;
 }
+
