@@ -39,11 +39,11 @@ export default function Navbar() {
 
       {/* Desktop links */}
       <div className="hidden sm:flex gap-5 items-center">
-        <div className="nav-item glass-effect px-4 transition-transform duration-200 hover:scale-110 flex items-center font-roboto-mono">
-          <Link href="/pages/flashcards">My Flashcards</Link>
+        <div className="nav-item glass-effect transition-transform duration-200 hover:scale-110 flex items-center font-roboto-mono">
+          <Link href="/pages/flashcards" className="px-4">My Flashcards</Link>
         </div>
-        <div className="nav-item glass-effect px-4 transition-transform duration-200 hover:scale-110 flex items-center font-roboto-mono">
-          <Link href="/pages/practice">Practice</Link>
+        <div className="nav-item glass-effect transition-transform duration-200 hover:scale-110 flex items-center font-roboto-mono">
+          <Link href="/pages/practice" className="px-4">Practice</Link>
         </div>
 
         {/* Desktop Hamburger */}
