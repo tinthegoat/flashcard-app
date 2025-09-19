@@ -29,7 +29,7 @@ export default function Navbar() {
     "px-4 py-2 hover:bg-white/20 transition-colors duration-200 font-roboto-mono";
 
   const dropdownClass =
-    "absolute right-0 mt-2 flex flex-col bg-black/70 backdrop-blur-md shadow-lg z-50";
+    "absolute right-0 mt-2 flex flex-col bg-black/70 backdrop-blur-md shadow-lg z-50 bg-gradient-to-b from-black/40 to-blue-900/40 rounded-2xl shadow-lg text-sm";
 
   return (
     <div className="flex justify-between items-center nav-bar px-5 glass-effect relative">
@@ -76,7 +76,7 @@ export default function Navbar() {
           ☰
         </div>
         {mobileOpen && (
-          <div className={dropdownClass}>
+          <div className={dropdownClass} >
             <Link href="/pages/flashcards" className={menuItemClass}>
               My Flashcards
             </Link>
