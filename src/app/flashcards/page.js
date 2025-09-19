@@ -1,5 +1,9 @@
-import "../globals.css";
+import Link from "next/link";
 
 export default function FlashcardsPage() {
-  return <div>Flashcards Content</div>;
+  return (
+    <>
+    Flashcards Page
+    </>
+  );
 }

@@ -1,5 +1,9 @@
-import "../globals.css";
+import Link from "next/link";
 
 export default function PracticePage() {
-  return <div>Practice Content</div>;
+  return (
+    <>
+    Practice Page
+    </>
+  );
 }
