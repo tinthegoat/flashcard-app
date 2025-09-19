@@ -56,10 +56,10 @@ export default function Navbar() {
           </div>
           {desktopOpen && (
             <div className={dropdownClass}>
-              <Link href="/pages/leaderboard" className={menuItemClass}>
+              <Link href="/pages/leaderboard" className={menuItemClass} onClick={() => setDesktopOpen(false)}>
                 Leaderboard
               </Link>
-              <Link href="/pages/user" className={menuItemClass}>
+              <Link href="/pages/user" className={menuItemClass} onClick={() => setDesktopOpen(false)}>
                 User
               </Link>
             </div>
@@ -77,16 +77,16 @@ export default function Navbar() {
         </div>
         {mobileOpen && (
           <div className={dropdownClass} >
-            <Link href="/pages/flashcards" className={menuItemClass}>
+            <Link href="/pages/flashcards" className={menuItemClass} onClick={() => setMobileOpen(false)}>
               My Flashcards
             </Link>
-            <Link href="/pages/practice" className={menuItemClass}>
+            <Link href="/pages/practice" className={menuItemClass} onClick={() => setMobileOpen(false)}>
               Practice
             </Link>
-            <Link href="/pages/leaderboard" className={menuItemClass}>
+            <Link href="/pages/leaderboard" className={menuItemClass} onClick={() => setMobileOpen(false)}>
               Leaderboard
             </Link>
-            <Link href="/pages/user" className={menuItemClass}>
+            <Link href="/pages/user" className={menuItemClass} onClick={() => setMobileOpen(false)}>
               User
             </Link>
           </div>
