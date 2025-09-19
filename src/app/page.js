@@ -12,8 +12,8 @@ export default function Home() {
                 Try it now!
               </div>
             </div>
-            <div className="btn glass-effect px-10 py-3 w-fit text-lg font-semibold transition-transform duration-200 hover:scale-110">
-              <Link href="/flashcards">Get Started</Link>
+            <div className="btn cursor-pointer glass-effect px-10 py-3 w-fit text-lg font-semibold transition-transform duration-200 hover:scale-110 font-roboto-mono">
+              <Link href="/pages/flashcards">Get Started</Link>
             </div>
           </div>
       </div>
