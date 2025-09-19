@@ -26,10 +26,10 @@ export default function Navbar() {
 
   // CSS classes for reuse because Tailwind is verbose and such a pain to copy paste every single timeeeeee so annoying
   const menuItemClass =
-    "px-4 py-2 hover:bg-white/20 transition-colors duration-200 font-roboto-mono";
+    "px-4 py-2 hover:bg-white/20 rounded-2xl transition-colors duration-200 font-roboto-mono";
 
   const dropdownClass =
-    "absolute right-0 mt-2 flex flex-col bg-black/70 backdrop-blur-md shadow-lg z-50 bg-gradient-to-b from-black/40 to-blue-900/40 rounded-2xl shadow-lg text-sm";
+    "absolute right-0 mt-2 flex flex-col bg-black/70 backdrop-blur-md shadow-lg z-50 bg-gradient-to-b from-black/40 to-blue-900/40 rounded-2xl text-sm";
 
   return (
     <div className="flex justify-between items-center nav-bar px-5 glass-effect relative">
