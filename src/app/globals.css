@@ -12,6 +12,10 @@
   }
 }
 
+.font-roboto-mono {
+  font-family: 'Roboto Mono', monospace;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -24,8 +28,6 @@ body {
   align-items: center;
 }
 
-
-
 .glass-effect {
   background: rgba(4, 4, 4, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -34,7 +36,6 @@ body {
   box-shadow: /* inset glow */
     inset 0 0 15px rgba(149, 0, 255, 0.2),
     inset 0 0 25px rgba(0, 60, 255, 0.15);
-    
   border-radius: 2em;
   -webkit-border-radius: 2em;
   -moz-border-radius: 2em;
@@ -42,7 +43,19 @@ body {
   -o-border-radius: 2em;
 }
 
-.font-roboto-mono {
-  font-family: 'Roboto Mono', monospace;
+/* animate gradient vertically */
+.animated-bg {
+  background: linear-gradient(to bottom, #000000 0%, #001f5b 50%, #6b21a8 100%);
+  background-size: 100% 200%;
+  background-position: center top;
+  animation: bg-scroll 5s linear infinite alternate;
+  -webkit-animation: bg-scroll 7s linear infinite alternate;
 }
+
+@keyframes bg-scroll {
+  0%   { background-position: center top; }
+  100% { background-position: center bottom; }
+}
+
+
 
