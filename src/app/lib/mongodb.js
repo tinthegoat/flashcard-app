@@ -5,16 +5,16 @@ let isConnected = false;
 
 export async function connectToDB() {
   mongoose.set('strictQuery', true);
-  
+
   if (isConnected) {
     console.log("Already connected to MongoDB");
     return;
   }
-  
+
   if (!process.env.MONGODB_URI) {
     throw new Error("MONGODB_URI is not defined in environment variables");
   }
-  
+
   try {
     console.log("Attempting to connect to MongoDB...");
     await mongoose.connect(process.env.MONGODB_URI, {

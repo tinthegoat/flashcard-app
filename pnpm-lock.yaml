@@ -11,6 +11,9 @@ importers:
       dotenv:
         specifier: ^17.2.2
         version: 17.2.2
+      flashcard-app:
+        specifier: 'link:'
+        version: 'link:'
       mongoose:
         specifier: ^8.18.1
         version: 8.18.1

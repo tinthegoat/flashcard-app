@@ -38,7 +38,8 @@ export default function LoginPage() {
         });
       } else {
         // Login
-        res = await fetch(`${basePath}/api/user?username=${encodeURIComponent(payload.username)}&pin=${encodeURIComponent(payload.pin)}`);
+        const params = new URLSearchParams(payload);
+        res = await fetch(`${basePath}/api/user?${params.toString()}`);
       }
 
       const data = await res.json();
@@ -93,15 +94,15 @@ export default function LoginPage() {
             {loading ? "Processing..." : (isSignup ? "Sign Up" : "Login")}
           </button>
         </form>
-        
+
         {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
-        
+
         <div className="text-center mt-5 text-sm font-roboto-mono">
           {isSignup ? (
             <>
               Already have an account?{" "}
-              <button 
-                onClick={() => setIsSignup(false)} 
+              <button
+                onClick={() => setIsSignup(false)}
                 className="underline hover:text-blue-400"
                 disabled={loading}
               >
@@ -110,9 +111,10 @@ export default function LoginPage() {
             </>
           ) : (
             <>
-              Don't have an account?{" "}
-              <button 
-                onClick={() => setIsSignup(true)} 
+
+              Want to create a new account?{" "}
+              <button
+                onClick={() => setIsSignup(true)}
                 className="underline hover:text-blue-400"
                 disabled={loading}
               >
