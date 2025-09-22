@@ -1,17 +1,30 @@
+// src/app/lib/mongodb.js
 import mongoose from "mongoose";
 
 let isConnected = false;
 
 export async function connectToDB() {
-  if (isConnected) return;
-
+  mongoose.set('strictQuery', true);
+  
+  if (isConnected) {
+    console.log("Already connected to MongoDB");
+    return;
+  }
+  
+  if (!process.env.MONGODB_URI) {
+    throw new Error("MONGODB_URI is not defined in environment variables");
+  }
+  
   try {
+    console.log("Attempting to connect to MongoDB...");
     await mongoose.connect(process.env.MONGODB_URI, {
-      dbName: "flashcard-app"
+      dbName: "studyflash",
     });
     isConnected = true;
-    console.log("MongoDB connected");
+    console.log("MongoDB connected successfully");
   } catch (err) {
-    console.error("MongoDB connection error", err);
+    console.error("MongoDB connection error:", err);
+    isConnected = false;
+    throw new Error(`MongoDB connection failed: ${err.message}`);
   }
 }

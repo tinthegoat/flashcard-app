@@ -1,3 +1,4 @@
+// src/app/models/Flashcard.js
 import mongoose from "mongoose";
 
 const FlashcardSchema = new mongoose.Schema({

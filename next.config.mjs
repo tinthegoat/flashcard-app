@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-    basePath: '/studyflash',
-};
-
-export default nextConfig;
+   const nextConfig = {
+     basePath: '/studyflash',
+     serverExternalPackages: ['mongoose']
+   }
+   export default nextConfig
