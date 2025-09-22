@@ -1,5 +1,4 @@
 // src/app/page.js
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
@@ -14,7 +13,7 @@ export default function Home() {
               </div>
             </div>
             <div className="btn glass-effect py-3 w-fit text-lg font-semibold transition-transform duration-200 hover:scale-110 font-roboto-mono">
-              <Link href="/pages/login" className="px-10">Get Started</Link>
+              <Link href="/pages/flashcards" className="px-10">Get Started</Link>
             </div>
           </div>
       </div>

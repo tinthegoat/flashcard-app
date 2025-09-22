@@ -2,20 +2,23 @@
 import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
-  username: { 
-    type: String, 
-    required: true, 
+  username: {
+    type: String,
+    required: true,
     unique: true,
     trim: true
   },
-  pin: { 
+  pin: {
     type: String,
     trim: true
   },
-  score: { 
-    type: Number, 
-    default: 0 
+  score: {
+    type: Number,
+    default: 0
   },
+  token: {
+    type: String
+  }
 }, {
   timestamps: true // Optional: adds createdAt and updatedAt
 });

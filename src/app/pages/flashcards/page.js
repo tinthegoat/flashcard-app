@@ -1,10 +1,11 @@
-// src/app/pages/flashcards/page.js
-import Link from "next/link";
+"use client";
+
+import ProtectedRoute from "../../components/ProtectedRoute";
 
 export default function FlashcardsPage() {
   return (
-    <>
-    Flashcards Page
-    </>
+    <ProtectedRoute>
+      <div>Flashcards content here</div>
+    </ProtectedRoute>
   );
 }
