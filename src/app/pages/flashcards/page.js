@@ -1,3 +1,4 @@
+// src/app/pages/flashcards/page.js
 "use client";
 
 import ProtectedRoute from "../../components/ProtectedRoute";
