@@ -1,24 +1,24 @@
+// src/app/pages/user/page.js
 "use client";
-import { useState, useEffect } from "react";
+
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import toast from "react-hot-toast";
 
 export default function UserPage() {
-  const [username, setUsername] = useState("");
+  const { data: session } = useSession();
   const router = useRouter();
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("flashUser");
-    if (storedUser) {
-      const { username } = JSON.parse(storedUser);
-      setUsername(username);
+  const handleLogout = async () => {
+    try {
+      await signOut({ redirect: false });
+      toast.success("Logged out successfully");
+      router.push("/pages/login");
+    } catch (error) {
+      toast.error("Logout failed");
     }
-  }, []);
-
-  function handleLogout() {
-    localStorage.removeItem("flashUser"); // remove the correct key
-    router.push("/pages/login");
-  }
+  };
 
   return (
     <ProtectedRoute>
@@ -26,7 +26,7 @@ export default function UserPage() {
         <div className="glass-effect rounded-2xl p-8 w-full max-w-md text-center">
           <h1 className="text-3xl font-bold font-roboto-mono mb-6">User Page</h1>
           <p className="text-lg font-roboto-mono mb-5">
-            Logged in as: <span className="font-semibold">{username}</span>
+            Logged in as: <span className="font-semibold">{session?.user?.username || "Loading..."}</span>
           </p>
           <button
             onClick={handleLogout}

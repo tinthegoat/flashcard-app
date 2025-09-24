@@ -6,21 +6,18 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    trim: true
+    trim: true,
   },
   pin: {
-    type: String,
-    trim: true
+    type: String, // Stores hashed PIN
+    trim: true,
   },
   score: {
     type: Number,
-    default: 0
+    default: 0,
   },
-  token: {
-    type: String
-  }
 }, {
-  timestamps: true // Optional: adds createdAt and updatedAt
+  timestamps: true,
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);
