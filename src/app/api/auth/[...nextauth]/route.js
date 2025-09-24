@@ -12,29 +12,49 @@ export const authOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        username: { label: "Username", type: "text" },
-        pin: { label: "PIN", type: "password" },
+        username: {
+          label: "Username",
+          type: "text",
+          placeholder: "Enter username",
+        },
+        pin: {
+          label: "PIN",
+          type: "password",
+          placeholder: "Enter 4-8 digit PIN",
+        },
       },
       async authorize(credentials) {
-        await connectToDB();
-        const { username, pin } = credentials;
+        if (!credentials?.username || !credentials?.pin) {
+          throw new Error("Username and PIN are required");
+        }
 
-        if (!username) throw new Error("Username is required");
+        const username = credentials.username.trim();
+        const pin = credentials.pin.trim();
+
+        // Basic validation
+        if (username.length < 3 || username.length > 20) {
+          throw new Error("Username must be 3-20 characters long");
+        }
+        if (!/^[a-zA-Z0-9]+$/.test(username)) {
+          throw new Error("Username must be alphanumeric");
+        }
+        if (!/^\d{4,8}$/.test(pin)) {
+          throw new Error("PIN must be 4-8 digits");
+        }
+
+        await connectToDB();
 
         const user = await User.findOne({ username });
         if (!user) {
-          // Signup: Create new user if not found
-          if (pin) {
-            const hashedPin = await bcrypt.hash(pin, 10);
-            const newUser = new User({ username, pin: hashedPin, score: 0 });
-            await newUser.save();
-            return { id: newUser._id, name: newUser.username };
-          }
-          throw new Error("User not found");
+          // Signup: Create new user
+          const hashedPin = await bcrypt.hash(pin, 10);
+          const newUser = new User({ username, pin: hashedPin, score: 0 });
+          await newUser.save();
+          return { id: newUser._id, name: newUser.username };
         }
 
         // Login: Verify PIN
-        if (pin && user.pin && (await bcrypt.compare(pin, user.pin))) {
+        if (await bcrypt.compare(pin, user.pin)) {
           return { id: user._id, name: user.username };
         }
         throw new Error("Incorrect PIN");
@@ -42,7 +62,7 @@ export const authOptions = {
     }),
   ],
   session: {
-    strategy: "jwt", // Use JWT for sessions (stored in cookies)
+    strategy: "jwt",
     maxAge: 24 * 60 * 60, // 1 day
   },
   callbacks: {
