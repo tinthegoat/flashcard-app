@@ -1,26 +1,62 @@
+/* src/app/globals.css */
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #040404;
+  --foreground: #ececec;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: white) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0ececec;
+    --foreground: #040404;
   }
+}
+
+.font-roboto-mono {
+  font-family: 'Roboto Mono', monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+
 }
+
+.nav-bar {
+  height: 3rem;
+  width: 100%;
+  align-items: center;
+}
+
+.glass-effect {
+  background: rgba(4, 4, 4, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  box-shadow: /* inset glow */
+    inset 0 0 15px rgba(149, 0, 255, 0.2),
+    inset 0 0 25px rgba(0, 60, 255, 0.15);
+  border-radius: 2em;
+  -webkit-border-radius: 2em;
+  -moz-border-radius: 2em;
+  -ms-border-radius: 2em;
+  -o-border-radius: 2em;
+}
+
+/* animate gradient vertically */
+.animated-bg {
+  background: linear-gradient(to bottom, #000000 0%, #001f5b 50%, #6b21a8 100%);
+  background-size: 100% 200%;
+  background-position: center top;
+  animation: bg-scroll 5s linear infinite alternate;
+  -webkit-animation: bg-scroll 7s linear infinite alternate;
+}
+
+@keyframes bg-scroll {
+  0%   { background-position: center top; }
+  100% { background-position: center bottom; }
+}
+
+
+
