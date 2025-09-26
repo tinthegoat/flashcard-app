@@ -10,6 +10,7 @@ const UserSchema = new mongoose.Schema({
   },
   pin: {
     type: String,
+    required: true,
     trim: true
   },
   score: {
@@ -19,8 +20,6 @@ const UserSchema = new mongoose.Schema({
   token: {
     type: String
   }
-}, {
-  timestamps: true // Optional: adds createdAt and updatedAt
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);

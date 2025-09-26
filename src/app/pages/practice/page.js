@@ -1,4 +1,4 @@
-// src/app/pages/user/page.js
+// src/app/pages/practice/page.js
 "use client";
 
 import { useState, useEffect } from "react";
@@ -46,6 +46,11 @@ export default function PracticePage() {
   const submitAttempt = async () => {
     setLoading(true);
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
+    if (!storedUser.username) {
+      toast.error("Please login to save practice session");
+      router.push("/pages/login");
+      return;
+    }
     try {
       const res = await fetch(`/studyflash/api/practice`, {
         method: "POST",
@@ -56,7 +61,7 @@ export default function PracticePage() {
         const data = await res.json();
         throw new Error(data.error || "Failed to save attempt");
       }
-      toast.success("Practice session saved! Score updated.");
+      toast.success(`Practice session saved! Score updated (+${attempts.filter(a => a.correct).length} points)`);
       setAttempts([]);
       setCurrentIndex(0);
     } catch (err) {

@@ -24,15 +24,28 @@ export async function POST(req) {
     return new Response(JSON.stringify({ error: "user_id and flashcards array required" }), { status: 400 });
   }
 
+  // Validate user exists
+  const user = await User.findOne({ username: user_id });
+  if (!user) {
+    return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+  }
+
   // Save attempt
   const attempt = new Attempt({ user_id, flashcards });
   await attempt.save();
 
-  // Calculate correct answers
+  // Calculate correct answers (1 mark per correct flashcard)
   const correctCount = flashcards.filter(f => f.correct).length;
 
   // Update user score
-  await User.updateOne({ username: user_id }, { $inc: { score: correctCount } });
+  const updateResult = await User.updateOne(
+    { username: user_id },
+    { $inc: { score: correctCount } }
+  );
+
+  if (updateResult.modifiedCount === 0) {
+    return new Response(JSON.stringify({ error: "Failed to update user score" }), { status: 500 });
+  }
 
   return new Response(JSON.stringify(attempt), { status: 201 });
 }
