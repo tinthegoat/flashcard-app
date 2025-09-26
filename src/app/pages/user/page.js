@@ -1,3 +1,4 @@
+// src/app/pages/user/page.js
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,15 +19,19 @@ export default function UserPage() {
       return;
     }
     setLoading(true);
-    fetch(`/api/user?username=${storedUser.username}`)
-      .then((res) => res.json())
-      .then((data) => setUserData({ username: data.username, score: data.score }))
-      .catch(() => toast.error("Failed to load user data"))
+    fetch(`/studyflash/api/user?username=${encodeURIComponent(storedUser.username)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch user data");
+        return res.json();
+      })
+      .then((data) => setUserData({ username: data.username, score: data.score || 0 }))
+      .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
   }, [router]);
 
   function handleLogout() {
-    localStorage.removeItem("flashUser"); // remove the correct key
+    localStorage.removeItem("flashUser");
+    toast.success("Logged out successfully");
     router.push("/pages/login");
   }
 
@@ -34,7 +39,7 @@ export default function UserPage() {
     <ProtectedRoute>
       <div className="flex flex-col items-center justify-center min-h-screen px-5">
         <div className="glass-effect rounded-2xl p-8 w-full max-w-md text-center">
-          <h1 className="text-3xl font-bold font-roboto-mono mb-6">User Page</h1>
+          <h1 className="text-3xl font-bold font-roboto-mono mb-6">User Profile</h1>
           {loading ? (
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
           ) : (
@@ -47,7 +52,7 @@ export default function UserPage() {
               </p>
               <button
                 onClick={handleLogout}
-                className="btn glass-effect px-5 py-2 font-semibold font-roboto-mono transition-transform duration-200 hover:scale-105"
+                className="btn glass-effect px-5 py-2 font-semibold font-roboto-mono transition-transform duration-200 hover:scale-105 bg-red-500"
               >
                 Logout
               </button>

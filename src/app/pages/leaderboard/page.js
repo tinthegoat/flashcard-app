@@ -1,3 +1,4 @@
+// src/app/pages/leaderboard/page.js
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,10 +11,13 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/leaderboard?period=all")
-      .then((res) => res.json())
+    fetch(`/studyflash/api/leaderboard?period=all`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch leaderboard");
+        return res.json();
+      })
       .then((data) => setLeaderboard(data))
-      .catch(() => toast.error("Failed to load leaderboard"))
+      .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
   }, []);
 

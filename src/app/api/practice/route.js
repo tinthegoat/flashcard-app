@@ -1,5 +1,4 @@
 // src/app/api/practice/route.js
-
 import { connectToDB } from "@/lib/mongodb";
 import Attempt from "@/models/Attempt";
 import User from "@/models/User";
@@ -33,7 +32,7 @@ export async function POST(req) {
   const correctCount = flashcards.filter(f => f.correct).length;
 
   // Update user score
-  await User.findByIdAndUpdate(user_id, { $inc: { score: correctCount } });
+  await User.updateOne({ username: user_id }, { $inc: { score: correctCount } });
 
   return new Response(JSON.stringify(attempt), { status: 201 });
 }

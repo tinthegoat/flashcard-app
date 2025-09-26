@@ -23,12 +23,15 @@ export default function FlashcardsPage() {
       router.push("/pages/login");
       return;
     }
-  setLoading(true);
-  fetch(`/api/flashcards?user_id=${storedUser.username}`)
-    .then((res) => res.json())
-    .then((data) => setFlashcards(data))
-    .catch(() => toast.error("Failed to load flashcards"))
-    .finally(() => setLoading(false));
+    setLoading(true);
+    fetch(`/studyflash/api/flashcards?user_id=${encodeURIComponent(storedUser.username)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch flashcards");
+        return res.json();
+      })
+      .then((data) => setFlashcards(data))
+      .catch((err) => toast.error(err.message))
+      .finally(() => setLoading(false));
   }, [router]);
 
   const handleSubmit = async (e) => {
@@ -50,7 +53,7 @@ export default function FlashcardsPage() {
     };
 
     try {
-      const url = editingId ? `/api/flashcards` : `/api/flashcards`;
+      const url = editingId ? `/studyflash/api/flashcards` : `/studyflash/api/flashcards`;
       const method = editingId ? "PATCH" : "POST";
       const body = editingId ? { ...payload, flashcard_id: editingId } : payload;
 
@@ -85,7 +88,7 @@ export default function FlashcardsPage() {
   const handleDelete = async (flashcard_id) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/flashcards`, {
+      const res = await fetch(`/studyflash/api/flashcards`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ flashcard_id }),
@@ -121,7 +124,7 @@ export default function FlashcardsPage() {
             placeholder="Front"
             value={front}
             onChange={(e) => setFront(e.target.value)}
-            className="px-4 py-2 rounded bg-black/30 focus:outline-none mb-3 w-full"
+            className="px-4 py-2 rounded bg-black/30 focus:outline-none mb-3 w-full text-white"
             disabled={loading}
           />
           <input
@@ -129,7 +132,7 @@ export default function FlashcardsPage() {
             placeholder="Back"
             value={back}
             onChange={(e) => setBack(e.target.value)}
-            className="px-4 py-2 rounded bg-black/30 focus:outline-none mb-3 w-full"
+            className="px-4 py-2 rounded bg-black/30 focus:outline-none mb-3 w-full text-white"
             disabled={loading}
           />
           <input
@@ -137,7 +140,7 @@ export default function FlashcardsPage() {
             placeholder="Tags (comma-separated)"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-            className="px-4 py-2 rounded bg-black/30 focus:outline-none mb-3 w-full"
+            className="px-4 py-2 rounded bg-black/30 focus:outline-none mb-3 w-full text-white"
             disabled={loading}
           />
           <label className="flex items-center mb-3">
@@ -161,30 +164,34 @@ export default function FlashcardsPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {flashcards.map((card) => (
-            <div key={card._id} className="glass-effect p-4 rounded-2xl">
-              <h2 className="font-bold">{card.front}</h2>
-              <p>{card.back}</p>
-              <p className="text-sm text-gray-400">Tags: {card.tags.join(", ") || "None"}</p>
-              <p className="text-sm text-gray-400">{card.isPublic ? "Public" : "Private"}</p>
-              <div className="flex gap-2 mt-2">
-                <button
-                  onClick={() => handleEdit(card)}
-                  className="btn glass-effect px-3 py-1 text-sm transition-transform duration-200 hover:scale-105"
-                  disabled={loading}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(card._id)}
-                  className="btn glass-effect px-3 py-1 text-sm bg-red-500 transition-transform duration-200 hover:scale-105"
-                  disabled={loading}
-                >
-                  Delete
-                </button>
+          {flashcards.length === 0 && !loading ? (
+            <p>No flashcards available. Create some!</p>
+          ) : (
+            flashcards.map((card) => (
+              <div key={card._id} className="glass-effect p-4 rounded-2xl">
+                <h2 className="font-bold">{card.front}</h2>
+                <p>{card.back}</p>
+                <p className="text-sm text-gray-400">Tags: {card.tags.join(", ") || "None"}</p>
+                <p className="text-sm text-gray-400">{card.isPublic ? "Public" : "Private"}</p>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => handleEdit(card)}
+                    className="btn glass-effect px-3 py-1 text-sm transition-transform duration-200 hover:scale-105"
+                    disabled={loading}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(card._id)}
+                    className="btn glass-effect px-3 py-1 text-sm bg-red-500 transition-transform duration-200 hover:scale-105"
+                    disabled={loading}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </ProtectedRoute>
