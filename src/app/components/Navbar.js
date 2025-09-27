@@ -32,7 +32,7 @@ export default function Navbar() {
     "absolute right-0 mt-2 flex flex-col bg-black/70 backdrop-blur-md shadow-lg z-[9999] bg-gradient-to-b from-black/40 to-blue-900/40 rounded-2xl text-sm";
 
   return (
-    <div className="flex justify-between items-center nav-bar px-5 glass-effect relative">
+    <div className="flex justify-between items-center nav-bar z-[9999] px-5 glass-effect relative">
       <div className="text-2xl font-roboto-mono">
         <Link href="/">StudyFlash</Link>
       </div>
