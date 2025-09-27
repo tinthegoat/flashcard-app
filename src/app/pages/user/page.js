@@ -67,7 +67,7 @@ export default function UserPage() {
     setLoading(true);
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     try {
-      const res = await fetch(`/${apiBase}/user`, {
+      const res = await fetch(`${apiBase}/user`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: storedUser.username, oldPassword: oldPassword.trim(), password: newPassword.trim() }),

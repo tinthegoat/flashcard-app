@@ -29,7 +29,6 @@ export default function LoginPage() {
     }
 
     try {
-      const basePath = process.env.NEXT_PUBLIC_API_BASE_URL || "";
       const res = await fetch(isSignup ? `${apiBase}/user` : `${apiBase}/user?${new URLSearchParams(payload).toString()}`, {
         method: isSignup ? "POST" : "GET",
         headers: { "Content-Type": "application/json" },
