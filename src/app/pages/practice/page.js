@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast"; // Default import with Toaster
 
 export default function PracticePage() {
   const [sets, setSets] = useState([]);
@@ -17,23 +17,36 @@ export default function PracticePage() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("Initializing toast:", toast); // Debug toast
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     if (!storedUser.username) {
-      toast.error("Please login to practice flashcards");
+      if (toast && toast.error) {
+        toast.error("Please login to practice flashcards");
+      } else {
+        console.warn("Toast not initialized, skipping login error toast");
+      }
       router.push("/pages/login");
       return;
     }
     setLoading(true);
+    console.log("Fetching sets for user:", storedUser.username);
     fetch(`/studyflash/api/sets?user_id=${encodeURIComponent(storedUser.username)}`)
       .then((res) => {
-        if (!res.ok) throw new Error(`Failed to fetch sets: ${res.status}`);
+        if (!res.ok) throw new Error(`Failed to fetch sets: ${res.status} ${res.statusText}`);
         return res.json();
       })
       .then((data) => {
-        console.log("Sets fetched:", data);
+        console.log("Sets fetched:", JSON.stringify(data, null, 2));
         setSets(data);
       })
-      .catch((err) => toast.error(err.message))
+      .catch((err) => {
+        console.error("Sets fetch error:", err);
+        if (toast && toast.error) {
+          toast.error(err.message);
+        } else {
+          console.warn("Toast not initialized, skipping sets error toast");
+        }
+      })
       .finally(() => setLoading(false));
   }, [router]);
 
@@ -64,17 +77,27 @@ export default function PracticePage() {
       const res = await fetch(url);
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(`Failed to fetch flashcards: ${res.status} - ${errorData.error || "Unknown error"}`);
+        throw new Error(`Failed to fetch flashcards: ${res.status} - ${errorData.error || res.statusText}`);
       }
       const data = await res.json();
-      console.log("Flashcards received:", data);
+      console.log("Flashcards received:", JSON.stringify(data, null, 2));
       setFlashcards(data);
       if (data.length === 0 && newSelectedSetIds.length > 0) {
-        toast.error("No flashcards in selected sets. Add some first!");
+        setTimeout(() => {
+          if (toast && toast.success) {
+            toast.success("No flashcards in selected sets. Add some first!", { icon: "ℹ️" });
+          } else {
+            console.warn("Toast not initialized, skipping no flashcards toast");
+          }
+        }, 100);
       }
     } catch (err) {
-      console.error("Fetch error:", err);
-      toast.error(err.message);
+      console.error("Flashcards fetch error:", err);
+      if (toast && toast.error) {
+        toast.error(err.message);
+      } else {
+        console.warn("Toast not initialized, skipping flashcards error toast");
+      }
     } finally {
       setLoading(false);
     }
@@ -95,6 +118,7 @@ export default function PracticePage() {
     setLoading(true);
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     try {
+      console.log("Submitting practice attempt:", { user_id: storedUser.username, set_id: selectedSetIds.join(","), flashcards: attempts });
       const res = await fetch(`/studyflash/api/practice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -102,16 +126,23 @@ export default function PracticePage() {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to save attempt");
+        throw new Error(data.error || `Failed to save attempt: ${res.status}`);
       }
-      toast.success(`Practice session saved! Score updated (+${attempts.filter(a => a.correct).length} points)`);
+      if (toast && toast.success) {
+        toast.success(`Practice session saved! Score updated (+${attempts.filter(a => a.correct).length} points)`);
+      }
       setAttempts([]);
       setCurrentIndex(0);
       setShowBack(false);
       setSelectedSetIds([]);
       setFlashcards([]);
     } catch (err) {
-      toast.error(err.message);
+      console.error("Practice submit error:", err);
+      if (toast && toast.error) {
+        toast.error(err.message);
+      } else {
+        console.warn("Toast not initialized, skipping submit error toast");
+      }
     } finally {
       setLoading(false);
     }
@@ -120,6 +151,7 @@ export default function PracticePage() {
   if (loading) {
     return (
       <ProtectedRoute>
+        <Toaster /> {/* Render toasts */}
         <div className="flex justify-center items-center min-h-screen">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
@@ -130,6 +162,7 @@ export default function PracticePage() {
   if (sets.length === 0) {
     return (
       <ProtectedRoute>
+        <Toaster /> {/* Render toasts */}
         <div className="container mx-auto p-5 font-roboto-mono">
           <h1 className="text-3xl font-bold mb-6">Practice Flashcards</h1>
           <p>No sets available. Create some in Flashcards!</p>
@@ -147,6 +180,7 @@ export default function PracticePage() {
   return (
     <ProtectedRoute>
       <div className="container mx-auto p-5 font-roboto-mono">
+        <Toaster /> {/* Render toasts */}
         <h1 className="text-3xl font-bold mb-6">Practice Flashcards</h1>
         <div className="glass-effect p-6 rounded-2xl mb-6">
           <h2 className="text-xl font-semibold mb-4">Select Sets</h2>

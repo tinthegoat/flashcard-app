@@ -50,7 +50,7 @@ body {
   background-size: 100% 200%;
   background-position: center top;
   animation: bg-scroll 5s linear infinite alternate;
-  -webkit-animation: bg-scroll 7s linear infinite alternate;
+  -webkit-animation: bg-scroll 6s linear infinite alternate;
 }
 
 @keyframes bg-scroll {
