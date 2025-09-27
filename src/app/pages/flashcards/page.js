@@ -76,7 +76,6 @@ export default function FlashcardsPage() {
       console.log("Flashcards received for set_id:", setId, JSON.stringify(data, null, 2));
       setFlashcards(data);
       if (data.length === 0 && setId) {
-        // Delay toast to ensure initialization
         setTimeout(() => {
           if (toast && toast.success) {
             toast.success("No flashcards in this set. Add some!", { icon: "ℹ️" });
@@ -230,6 +229,81 @@ export default function FlashcardsPage() {
     }
   };
 
+  const updateSet = async () => {
+    if (!selectedSetId) {
+      if (toast && toast.error) {
+        toast.error("Please select a set to update");
+      } else {
+        console.warn("Toast not initialized, skipping set update error toast");
+      }
+      return;
+    }
+    const name = prompt("Enter new set name:", sets.find(set => set._id === selectedSetId)?.name);
+    if (!name) return;
+    setLoading(true);
+    try {
+      console.log("Updating set:", { set_id: selectedSetId, name });
+      const res = await fetch("/studyflash/api/sets", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ set_id: selectedSetId, name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Failed to update set: ${res.status}`);
+      setSets(sets.map(set => (set._id === selectedSetId ? { ...set, name } : set)));
+      if (toast && toast.success) {
+        toast.success("Set updated!");
+      }
+    } catch (err) {
+      console.error("Set update error:", err);
+      if (toast && toast.error) {
+        toast.error(err.message);
+      } else {
+        console.warn("Toast not initialized, skipping set update error toast");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteSet = async () => {
+    if (!selectedSetId) {
+      if (toast && toast.error) {
+        toast.error("Please select a set to delete");
+      } else {
+        console.warn("Toast not initialized, skipping set delete error toast");
+      }
+      return;
+    }
+    if (!confirm("Are you sure you want to delete this set and all its flashcards?")) return;
+    setLoading(true);
+    try {
+      console.log("Deleting set:", selectedSetId);
+      const res = await fetch("/studyflash/api/sets", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ set_id: selectedSetId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Failed to delete set: ${res.status}`);
+      setSets(sets.filter(set => set._id !== selectedSetId));
+      setFlashcards([]);
+      setSelectedSetId(null);
+      if (toast && toast.success) {
+        toast.success("Set deleted!");
+      }
+    } catch (err) {
+      console.error("Set delete error:", err);
+      if (toast && toast.error) {
+        toast.error(err.message);
+      } else {
+        console.warn("Toast not initialized, skipping set delete error toast");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleSetPublic = async (setId, currentIsPublic) => {
     setLoading(true);
     try {
@@ -264,33 +338,46 @@ export default function FlashcardsPage() {
         <h1 className="text-3xl font-bold mb-6">My Flashcards</h1>
         <div className="glass-effect p-6 rounded-2xl mb-6">
           <h2 className="text-xl font-semibold mb-4">My Sets</h2>
-          <button onClick={createSet} className="btn glass-effect px-5 py-2 font-semibold mb-4">
-            Create New Set
-          </button>
-          <div className="flex gap-2 overflow-x-auto mb-4">
-            <button
-              className={`px-4 py-2 rounded font-roboto-mono ${!selectedSetId ? "bg-blue-500 text-white" : "bg-white/20"}`}
-              onClick={() => handleSetSelect(null)}
-            >
-              All Cards
+          <div className="flex gap-2 mb-4">
+            <button onClick={createSet} className="btn glass-effect px-5 py-2 font-semibold transition-transform duration-200 hover:scale-105">
+              Create New Set
             </button>
-            {sets.map((set) => (
-              <div key={set._id} className="flex items-center gap-2">
-                <button
-                  className={`px-4 py-2 rounded font-roboto-mono ${selectedSetId === set._id ? "bg-blue-500 text-white" : "bg-white/20"}`}
-                  onClick={() => handleSetSelect(set._id)}
-                >
-                  {set.name}
-                </button>
-                <button
-                  onClick={() => toggleSetPublic(set._id, set.isPublic)}
-                  className="btn glass-effect px-3 py-1 text-sm transition-transform duration-200 hover:scale-105"
-                  disabled={loading}
-                >
-                  {set.isPublic ? "Make Private" : "Make Public"}
-                </button>
-              </div>
-            ))}
+            <button
+              onClick={updateSet}
+              className="btn glass-effect px-5 py-2 font-semibold transition-transform duration-200 hover:scale-105 disabled:opacity-50"
+              disabled={loading || !selectedSetId}
+            >
+              Update Set
+            </button>
+            <button
+              onClick={deleteSet}
+              className="btn glass-effect px-5 py-2 font-semibold bg-red-500 transition-transform duration-200 hover:scale-105 disabled:opacity-50"
+              disabled={loading || !selectedSetId}
+            >
+              Delete Set
+            </button>
+          </div>
+          <div className="flex items-center gap-2 mb-4">
+            <select
+              value={selectedSetId || ""}
+              onChange={(e) => handleSetSelect(e.target.value || null)}
+              className="px-4 py-2 rounded bg-black/30 focus:outline-none text-white font-roboto-mono w-full max-w-xs"
+              disabled={loading}
+            >
+              <option value="">All Cards</option>
+              {sets.map((set) => (
+                <option key={set._id} value={set._id}>{set.name}</option>
+              ))}
+            </select>
+            {selectedSetId && (
+              <button
+                onClick={() => toggleSetPublic(selectedSetId, sets.find(set => set._id === selectedSetId)?.isPublic)}
+                className="btn glass-effect px-3 py-2 text-sm transition-transform duration-200 hover:scale-105"
+                disabled={loading}
+              >
+                {sets.find(set => set._id === selectedSetId)?.isPublic ? "Make Private" : "Make Public"}
+              </button>
+            )}
           </div>
         </div>
         <form onSubmit={handleSubmit} className="glass-effect p-6 rounded-2xl mb-6">
