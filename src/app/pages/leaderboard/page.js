@@ -5,12 +5,13 @@ import { Toaster, toast } from "react-hot-toast";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function LeaderboardPage() {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
-    const url = `/studyflash/api/leaderboard?period=all`;
+    const url = `${apiBase}/leaderboard?period=all`;
     fetch(url)
       .then((res) => {
         if (!res.ok) {

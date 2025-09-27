@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function UserPage() {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
   const [userData, setUserData] = useState({ username: "", score: 0 });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function UserPage() {
       return;
     }
     setLoading(true);
-    fetch(`/studyflash/api/user?username=${encodeURIComponent(storedUser.username)}`)
+    fetch(`${apiBase}/user?username=${encodeURIComponent(storedUser.username)}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch user data");
         return res.json();
@@ -37,7 +38,7 @@ export default function UserPage() {
     setLoading(true);
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     try {
-      const res = await fetch("/studyflash/api/user", {
+      const res = await fetch(`${apiBase}/user`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: storedUser.username, username: newUsername }),
@@ -66,7 +67,7 @@ export default function UserPage() {
     setLoading(true);
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     try {
-      const res = await fetch("/studyflash/api/user", {
+      const res = await fetch(`/${apiBase}/user`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: storedUser.username, oldPassword: oldPassword.trim(), password: newPassword.trim() }),

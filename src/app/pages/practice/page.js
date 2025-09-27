@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function PracticePage() {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
   const [sets, setSets] = useState([]);
   const [selectedSetIds, setSelectedSetIds] = useState([]);
   const [flashcards, setFlashcards] = useState([]);
@@ -29,7 +30,7 @@ export default function PracticePage() {
       return;
     }
     setLoading(true);
-    fetch(`/studyflash/api/sets?user_id=${encodeURIComponent(storedUser.username)}`)
+    fetch(`${apiBase}/sets?user_id=${encodeURIComponent(storedUser.username)}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to fetch sets: ${res.status} ${res.statusText}`);
         return res.json();
@@ -77,9 +78,9 @@ export default function PracticePage() {
       const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
       let url;
       if (newSelectedSetIds.length === 0) {
-        url = `/studyflash/api/flashcards?user_id=${encodeURIComponent(storedUser.username)}`;
+        url = `${apiBase}/flashcards?user_id=${encodeURIComponent(storedUser.username)}`;
       } else {
-        url = `/studyflash/api/flashcards?set_ids=${newSelectedSetIds.join(",")}`;
+        url = `${apiBase}/flashcards?set_ids=${newSelectedSetIds.join(",")}`;
       }
       const res = await fetch(url);
       if (!res.ok) {
@@ -135,7 +136,7 @@ export default function PracticePage() {
       correctCount
     };
     try {
-      const res = await fetch(`/studyflash/api/practice`, {
+      const res = await fetch(`${apiBase}/practice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

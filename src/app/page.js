@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function Home() {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
   const [publicSets, setPublicSets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,19 +14,17 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("Initializing toast:", toast);
     setLoading(true);
-    fetch(`/studyflash/api/sets?public=true`)
+    fetch(`${apiBase}/sets?public=true`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to fetch public sets: ${res.status} ${res.statusText}`);
         return res.json();
       })
       .then(async (sets) => {
-        console.log("Public sets fetched:", JSON.stringify(sets, null, 2));
         const setsWithFlashcards = await Promise.all(
           sets.map(async (set) => {
             try {
-              const res = await fetch(`/studyflash/api/flashcards?set_id=${set._id}`);
+              const res = await fetch(`${apiBase}/flashcards?set_id=${set._id}`);
               if (!res.ok) throw new Error(`Failed to fetch flashcards for set ${set._id}`);
               const flashcards = await res.json();
               return { ...set, flashcards: flashcards.slice(0, 2) };
@@ -36,7 +35,6 @@ export default function Home() {
           })
         );
         const nonEmptySets = setsWithFlashcards.filter(set => set.flashcards.length > 0);
-        console.log("Non-empty public sets:", JSON.stringify(nonEmptySets, null, 2));
         setPublicSets(nonEmptySets);
       })
       .catch((err) => {
@@ -53,7 +51,7 @@ export default function Home() {
   const handleSetClick = async (set) => {
     setLoading(true);
     try {
-      const res = await fetch(`/studyflash/api/flashcards?set_id=${set._id}`);
+      const res = await fetch(`${apiBase}/flashcards?set_id=${set._id}`);
       if (!res.ok) throw new Error(`Failed to fetch flashcards for set ${set._id}`);
       const flashcards = await res.json();
       setSelectedSet({ ...set, flashcards });
@@ -95,8 +93,7 @@ export default function Home() {
         name: `${selectedSet.name} (by ${selectedSet.user_id})`,
         isPublic: false,
       };
-      console.log("Creating new set:", JSON.stringify(setPayload, null, 2));
-      const setRes = await fetch("/studyflash/api/sets", {
+      const setRes = await fetch(`${apiBase}/sets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(setPayload),
@@ -113,8 +110,7 @@ export default function Home() {
           back: card.back,
           isPublic: false,
         };
-        console.log("Creating flashcard:", JSON.stringify(flashcardPayload, null, 2));
-        return fetch("/studyflash/api/flashcards", {
+        return fetch(`${apiBase}/flashcards`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(flashcardPayload),

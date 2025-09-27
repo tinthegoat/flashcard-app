@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function LoginPage() {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSignup, setIsSignup] = useState(false);
@@ -29,7 +30,7 @@ export default function LoginPage() {
 
     try {
       const basePath = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-      const res = await fetch(isSignup ? `${basePath}/api/user` : `${basePath}/api/user?${new URLSearchParams(payload).toString()}`, {
+      const res = await fetch(isSignup ? `${apiBase}/user` : `${apiBase}/user?${new URLSearchParams(payload).toString()}`, {
         method: isSignup ? "POST" : "GET",
         headers: { "Content-Type": "application/json" },
         body: isSignup ? JSON.stringify(payload) : undefined,
@@ -56,7 +57,7 @@ export default function LoginPage() {
     if (!newPassword || newPassword.trim() === "") return;
     setLoading(true);
     try {
-      const res = await fetch("/studyflash/api/user", {
+      const res = await fetch(`${apiBase}/user`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: username.trim(), oldPassword: oldPassword.trim(), password: newPassword.trim() }),

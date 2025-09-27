@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function FlashcardsPage() {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
   const [sets, setSets] = useState([]);
   const [selectedSetId, setSelectedSetId] = useState(null);
   const [flashcards, setFlashcards] = useState([]);
@@ -27,7 +28,7 @@ export default function FlashcardsPage() {
       return;
     }
     setLoading(true);
-    fetch(`/studyflash/api/sets?user_id=${encodeURIComponent(storedUser.username)}`)
+    fetch(`${apiBase}/sets?user_id=${encodeURIComponent(storedUser.username)}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to fetch sets: ${res.status} ${res.statusText}`);
         return res.json();
@@ -59,8 +60,8 @@ export default function FlashcardsPage() {
     try {
       const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
       const url = setId
-        ? `/studyflash/api/flashcards?set_id=${setId}`
-        : `/studyflash/api/flashcards?user_id=${encodeURIComponent(storedUser.username)}`;
+        ? `${apiBase}/flashcards?set_id=${setId}`
+        : `${apiBase}/flashcards?user_id=${encodeURIComponent(storedUser.username)}`;
       const res = await fetch(url);
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -117,7 +118,7 @@ export default function FlashcardsPage() {
       isPublic: false,
     };
     try {
-      const url = editingId ? `/studyflash/api/flashcards` : `/studyflash/api/flashcards`;
+      const url = editingId ? `${apiBase}/flashcards` : `${apiBase}/flashcards`;
       const method = editingId ? "PATCH" : "POST";
       const body = editingId ? { ...payload, flashcard_id: editingId } : payload;
 
@@ -159,7 +160,7 @@ export default function FlashcardsPage() {
   const handleDelete = async (flashcard_id) => {
     setLoading(true);
     try {
-      const res = await fetch(`/studyflash/api/flashcards`, {
+      const res = await fetch(`${apiBase}/flashcards`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ flashcard_id }),
@@ -196,7 +197,7 @@ export default function FlashcardsPage() {
     if (!name) return;
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     try {
-      const res = await fetch("/studyflash/api/sets", {
+      const res = await fetch(`${apiBase}/sets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: storedUser.username, name }),
@@ -232,7 +233,7 @@ export default function FlashcardsPage() {
     if (!name) return;
     setLoading(true);
     try {
-      const res = await fetch("/studyflash/api/sets", {
+      const res = await fetch(`${apiBase}/sets`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ set_id: selectedSetId, name }),
@@ -267,7 +268,7 @@ export default function FlashcardsPage() {
     if (!confirm("Are you sure you want to delete this set and all its flashcards?")) return;
     setLoading(true);
     try {
-      const res = await fetch("/studyflash/api/sets", {
+      const res = await fetch(`${apiBase}/sets`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ set_id: selectedSetId }),
@@ -295,7 +296,7 @@ export default function FlashcardsPage() {
   const toggleSetPublic = async (setId, currentIsPublic) => {
     setLoading(true);
     try {
-      const res = await fetch("/studyflash/api/sets", {
+      const res = await fetch(`${apiBase}/sets`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ set_id: setId, isPublic: !currentIsPublic }),
