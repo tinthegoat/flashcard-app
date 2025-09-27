@@ -1,7 +1,7 @@
 // src/app/pages/practice/page.js
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import toast, { Toaster } from "react-hot-toast";
@@ -40,6 +40,9 @@ export default function PracticePage() {
       .then((data) => {
         console.log("Sets fetched:", JSON.stringify(data, null, 2));
         setSets(data);
+        if (data.length > 0) {
+          handleSetSelect(null);
+        }
       })
       .catch((err) => {
         console.error("Sets fetch error:", err);
@@ -52,7 +55,7 @@ export default function PracticePage() {
       .finally(() => setLoading(false));
   }, [router]);
 
-  const handleSetSelect = async (setId) => {
+  const handleSetSelect = useCallback(async (setId) => {
     let newSelectedSetIds;
     if (setId === null) {
       newSelectedSetIds = [];
@@ -61,14 +64,19 @@ export default function PracticePage() {
     } else {
       newSelectedSetIds = [...selectedSetIds, setId];
     }
+
     setSelectedSetIds(newSelectedSetIds);
-    setFlashcards([]);
-    setCurrentIndex(0);
-    setShowBack(false);
-    setAttempts([]);
     setIsModalOpen(false);
     setIsSessionComplete(false);
-    setLoading(true);
+
+    if (newSelectedSetIds.length === 0 && setId !== null) {
+      setFlashcards([]);
+      setCurrentIndex(0);
+      setShowBack(false);
+      setAttempts([]);
+      return;
+    }
+
     try {
       const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
       let url;
@@ -85,7 +93,11 @@ export default function PracticePage() {
       }
       const data = await res.json();
       console.log("Flashcards received:", JSON.stringify(data, null, 2));
+      
       setFlashcards(data);
+      setCurrentIndex(0);
+      setShowBack(false);
+      setAttempts([]);
       if (data.length === 0 && newSelectedSetIds.length > 0) {
         setTimeout(() => {
           if (toast && toast.success) {
@@ -102,10 +114,8 @@ export default function PracticePage() {
       } else {
         console.warn("Toast not initialized, skipping flashcards error toast");
       }
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [selectedSetIds]);
 
   const handleNext = (correct) => {
     if (flashcards.length === 0) return;
@@ -125,21 +135,22 @@ export default function PracticePage() {
     setLoading(true);
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     const correctCount = attempts.filter(a => a.correct).length;
-    console.log("Submitting practice attempt:", {
+    const payload = {
       user_id: storedUser.username,
-      set_id: selectedSetIds.join(","),
+      set_ids: selectedSetIds.length > 0 ? selectedSetIds : [],
       flashcards: attempts,
       correctCount
-    });
+    };
+    console.log("Submitting practice attempt:", JSON.stringify(payload, null, 2));
     try {
       const res = await fetch(`/studyflash/api/practice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: storedUser.username, set_id: selectedSetIds.join(","), flashcards: attempts }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || `Failed to save attempt: ${res.status}`);
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Failed to save attempt: ${res.status} ${res.statusText}`);
       }
       if (toast && toast.success) {
         toast.success(`Practice session saved! Score updated (+${correctCount} points)`);
@@ -164,17 +175,9 @@ export default function PracticePage() {
   };
 
   const handleStartPractice = () => {
-    if (selectedSetIds.length === 0) {
-      if (toast && toast.error) {
-        toast.error("Please select at least one set to start practice");
-      } else {
-        console.warn("Toast not initialized, skipping set selection error toast");
-      }
-      return;
-    }
     if (flashcards.length === 0) {
       if (toast && toast.error) {
-        toast.error("No flashcards in selected sets. Add some first!");
+        toast.error("No flashcards available. Add some in Flashcards!");
       } else {
         console.warn("Toast not initialized, skipping no flashcards error toast");
       }
@@ -236,9 +239,11 @@ export default function PracticePage() {
         <h1 className="text-3xl font-bold mb-6">Practice Flashcards</h1>
         <div className="glass-effect p-6 rounded-2xl mb-6">
           <h2 className="text-xl font-semibold mb-4">Select Sets</h2>
-          <div className="flex gap-2 overflow-x-auto mb-6">
+          <div className="flex gap-2 overflow-x-auto mb-6 transition-all duration-200">
             <button
-              className={`px-4 py-2 rounded font-roboto-mono ${selectedSetIds.length === 0 ? "bg-blue-500 text-white" : "bg-white/20"}`}
+              className={`px-4 py-2 rounded font-roboto-mono transition-colors duration-200 ${
+                selectedSetIds.length === 0 ? "bg-blue-500 text-white" : "bg-white/20"
+              }`}
               onClick={() => handleSetSelect(null)}
             >
               All Cards
@@ -246,35 +251,35 @@ export default function PracticePage() {
             {sets.map((set) => (
               <button
                 key={set._id}
-                className={`px-4 py-2 rounded font-roboto-mono ${selectedSetIds.includes(set._id) ? "bg-blue-500 text-white" : "bg-white/20"}`}
+                className={`px-4 py-2 rounded font-roboto-mono transition-colors duration-200 ${
+                  selectedSetIds.includes(set._id) ? "bg-blue-500 text-white" : "bg-white/20"
+                }`}
                 onClick={() => handleSetSelect(set._id)}
               >
                 {set.name}
               </button>
             ))}
           </div>
-          {selectedSetIds.length > 0 && (
+          {selectedSetIds.length > 0 && flashcards.length === 0 ? (
             <div>
-              {flashcards.length === 0 ? (
-                <div>
-                  <p>No flashcards in selected sets. Add some in Flashcards!</p>
-                  <button
-                    className="btn glass-effect px-5 py-2 font-semibold mt-4 transition-transform duration-200 hover:scale-105"
-                    onClick={() => router.push("/pages/flashcards")}
-                  >
-                    Go to Flashcards
-                  </button>
-                </div>
-              ) : (
-                <button
-                  className="btn glass-effect px-5 py-2 font-semibold bg-green-500 transition-transform duration-200 hover:scale-105"
-                  onClick={handleStartPractice}
-                  disabled={loading}
-                >
-                  Start Practice
-                </button>
-              )}
+              <p>No flashcards in selected sets. Add some in Flashcards!</p>
+              <button
+                className="btn glass-effect px-5 py-2 font-semibold mt-4 transition-transform duration-200 hover:scale-105"
+                onClick={() => router.push("/pages/flashcards")}
+              >
+                Go to Flashcards
+              </button>
             </div>
+          ) : (
+            flashcards.length > 0 && (
+              <button
+                className="btn glass-effect px-5 py-2 font-semibold bg-green-500 transition-transform duration-200 hover:scale-105"
+                onClick={handleStartPractice}
+                disabled={loading}
+              >
+                Start Practice
+              </button>
+            )
           )}
         </div>
 
@@ -287,23 +292,32 @@ export default function PracticePage() {
               </p>
               {flashcards.length > 0 && !isSessionComplete && (
                 <>
-                  <div
-                    className="glass-effect p-6 rounded-2xl w-full cursor-pointer"
-                    onClick={() => setShowBack(!showBack)}
-                  >
-                    <p>{showBack ? flashcards[currentIndex].back : flashcards[currentIndex].front}</p>
+                  {console.log("Current flashcard:", {
+                    index: currentIndex,
+                    front: flashcards[currentIndex]?.front,
+                    back: flashcards[currentIndex]?.back
+                  })}
+                  <div className="relative w-full h-48 perspective-1000 cursor-pointer" onClick={() => setShowBack(!showBack)}>
+                    <div className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${showBack ? "rotate-y-180" : "rotate-y-0"}`}>
+                      <div className={`absolute w-full h-full bg-blue-950 shadow-lg rounded-lg flex items-center justify-center p-6 text-blue-100 ${showBack ? "opacity-0" : "opacity-100"}`}>
+                        <p className="text-center">{flashcards[currentIndex]?.front || "Front not loaded"}</p>
+                      </div>
+                      <div className={`absolute w-full h-full bg-blue-100 shadow-lg rounded-lg flex items-center justify-center p-6 text-blue-950 rotate-y-180 ${showBack ? "opacity-100" : "opacity-0"}`}>
+                        <p className="text-center">{flashcards[currentIndex]?.back || "Back not loaded"}</p>
+                      </div>
+                    </div>
                   </div>
                   {showBack && (
                     <div className="flex gap-4 mt-4">
                       <button
-                        className="btn glass-effect px-5 py-2 font-semibold bg-green-500 transition-transform duration-200 hover:scale-105"
+                        className="btn glass-effect px-5 py-2 font-semibold !bg-green-800 transition-transform duration-200 hover:scale-105"
                         onClick={() => handleNext(true)}
                         disabled={loading}
                       >
                         Correct
                       </button>
                       <button
-                        className="btn glass-effect px-5 py-2 font-semibold bg-red-500 transition-transform duration-200 hover:scale-105"
+                        className="btn glass-effect px-5 py-2 font-semibold !bg-red-800 transition-transform duration-200 hover:scale-105"
                         onClick={() => handleNext(false)}
                         disabled={loading}
                       >
