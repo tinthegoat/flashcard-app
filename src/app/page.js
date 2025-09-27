@@ -3,14 +3,18 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import toast, { Toaster } from "react-hot-toast"; // Default import with Toaster
+import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function Home() {
   const [publicSets, setPublicSets] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSet, setSelectedSet] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
-    console.log("Initializing toast:", toast); // Debug toast
+    console.log("Initializing toast:", toast);
     setLoading(true);
     fetch(`/studyflash/api/sets?public=true`)
       .then((res) => {
@@ -25,14 +29,13 @@ export default function Home() {
               const res = await fetch(`/studyflash/api/flashcards?set_id=${set._id}`);
               if (!res.ok) throw new Error(`Failed to fetch flashcards for set ${set._id}`);
               const flashcards = await res.json();
-              return { ...set, flashcards: flashcards.slice(0, 3) };
+              return { ...set, flashcards: flashcards.slice(0, 2) };
             } catch (err) {
               console.error(`Error fetching flashcards for set ${set._id}:`, err);
               return { ...set, flashcards: [] };
             }
           })
         );
-        // Filter sets to only include those with at least one flashcard
         const nonEmptySets = setsWithFlashcards.filter(set => set.flashcards.length > 0);
         console.log("Non-empty public sets:", JSON.stringify(nonEmptySets, null, 2));
         setPublicSets(nonEmptySets);
@@ -48,9 +51,105 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
+  const handleSetClick = async (set) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/studyflash/api/flashcards?set_id=${set._id}`);
+      if (!res.ok) throw new Error(`Failed to fetch flashcards for set ${set._id}`);
+      const flashcards = await res.json();
+      setSelectedSet({ ...set, flashcards });
+      setIsModalOpen(true);
+    } catch (err) {
+      console.error("Flashcards fetch error for modal:", err);
+      if (toast && toast.error) {
+        toast.error(err.message);
+      } else {
+        console.warn("Toast not initialized, skipping modal flashcards error toast");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedSet(null);
+  };
+
+  const handleSaveSet = async () => {
+    const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
+    if (!storedUser.username) {
+      if (toast && toast.error) {
+        toast.error("Please login to save this set");
+      } else {
+        console.warn("Toast not initialized, skipping login error toast");
+      }
+      router.push("/pages/login");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Create new set
+      const setPayload = {
+        user_id: storedUser.username,
+        name: `${selectedSet.name} (by ${selectedSet.user_id})`,
+        isPublic: false,
+      };
+      console.log("Creating new set:", JSON.stringify(setPayload, null, 2));
+      const setRes = await fetch("/studyflash/api/sets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(setPayload),
+      });
+      const setData = await setRes.json();
+      if (!setRes.ok) throw new Error(setData.error || `Failed to create set: ${setRes.status}`);
+
+      // Copy flashcards
+      const flashcardPromises = selectedSet.flashcards.map((card) => {
+        const flashcardPayload = {
+          user_id: storedUser.username,
+          set_id: setData._id,
+          front: card.front,
+          back: card.back,
+          isPublic: false,
+        };
+        console.log("Creating flashcard:", JSON.stringify(flashcardPayload, null, 2));
+        return fetch("/studyflash/api/flashcards", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(flashcardPayload),
+        }).then((res) => {
+          if (!res.ok) {
+            return res.json().then((data) => {
+              throw new Error(data.error || `Failed to create flashcard: ${res.status}`);
+            });
+          }
+          return res.json();
+        });
+      });
+
+      await Promise.all(flashcardPromises);
+      if (toast && toast.success) {
+        toast.success("Set saved successfully!");
+      }
+      handleCloseModal();
+      router.push("/pages/flashcards");
+    } catch (err) {
+      console.error("Save set error:", err);
+      if (toast && toast.error) {
+        toast.error(err.message);
+      } else {
+        console.warn("Toast not initialized, skipping save set error toast");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-5 font-roboto-mono">
-      <Toaster /> {/* Render toasts */}
+      <Toaster />
       <div className="px-5">
         <div className="text-4xl font-bold mb-5 mt-10">
           Create your own flash cards and practice for better grades.
@@ -72,7 +171,11 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {publicSets.map((set) => (
-              <div key={set._id} className="glass-effect p-4 rounded-2xl">
+              <div
+                key={set._id}
+                className="glass-effect p-4 rounded-2xl cursor-pointer hover:scale-105 transition-transform duration-200"
+                onClick={() => handleSetClick(set)}
+              >
                 <h3 className="font-bold text-lg">{set.name}</h3>
                 <p className="text-sm text-gray-400">Created by: {set.user_id}</p>
                 <p className="text-sm text-gray-400">Flashcards: {set.flashcards.length}</p>
@@ -90,6 +193,43 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {isModalOpen && selectedSet && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="glass-effect p-6 rounded-2xl max-w-md w-full">
+            <h2 className="text-xl font-semibold mb-4">{selectedSet.name}</h2>
+            <p className="text-sm text-gray-400 mb-4">Created by: {selectedSet.user_id}</p>
+            <div className="max-h-96 overflow-y-auto">
+              {selectedSet.flashcards.length === 0 ? (
+                <p>No flashcards in this set.</p>
+              ) : (
+                selectedSet.flashcards.map((card) => (
+                  <div key={card._id} className="mb-4">
+                    <p className="text-sm font-bold">{card.front}</p>
+                    <p className="text-sm">{card.back}</p>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="flex gap-4 mt-4">
+              <button
+                className="btn glass-effect px-5 py-2 font-semibold bg-green-500 transition-transform duration-200 hover:scale-105"
+                onClick={handleSaveSet}
+                disabled={loading}
+              >
+                Save Set
+              </button>
+              <button
+                className="btn glass-effect px-5 py-2 font-semibold transition-transform duration-200 hover:scale-105"
+                onClick={handleCloseModal}
+                disabled={loading}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
