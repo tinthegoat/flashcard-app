@@ -2,6 +2,7 @@
 
 StudyFlash is a full-stack web application that helps students create, manage, and practice flashcards. The app is designed to make learning more interactive with user-friendly features, responsive design, and persistent storage using MongoDB.
 
+## https://github.com/tinthegoat/flashcard-app
 ---
 
 ## Members
