@@ -68,19 +68,9 @@ pnpm install
 
 ### API Routes
 
-### User
-- `POST /api/user` → Sign up
-- `GET /api/user` → Log in
-- `PATCH /api/user` → Update username/password
-
-### Sets
-- `POST /api/sets` → Create a new set
-- `GET /api/sets?user_id={username}` → Get all sets for user
-- `PATCH /api/sets/:id` → Rename set
-- `DELETE /api/sets/:id` → Delete set
-
-### Flashcards
-- `POST /api/flashcards` → Add flashcard to set
-- `GET /api/flashcards?set_id={id}` → Get flashcards for a set
-- `PATCH /api/flashcards/:id` → Update flashcard
-- `DELETE /api/flashcards/:id` → Delete flashcard
+#### User & Authentication
+| Method | Path | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/user` | **Sign up**. Creates a new user with `username` and `password`. Returns `username` and session `token`. |
+| `GET` | `/api/user` | **Log in**. Authenticates user using `username` and `password` query parameters. Generates and returns a new session `token`. |
+| `PATCH` | `/api/user` | **Update user**. Updates user's `username` or `password` (requires `user_id` and `oldPassword` for password change). |
