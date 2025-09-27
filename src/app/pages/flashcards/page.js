@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import toast, { Toaster } from "react-hot-toast"; // Default import with Toaster
+import toast, { Toaster } from "react-hot-toast";
 
 export default function FlashcardsPage() {
   const [sets, setSets] = useState([]);
@@ -17,7 +17,7 @@ export default function FlashcardsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("Initializing toast:", toast); // Debug toast
+    console.log("Initializing toast:", toast);
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     if (!storedUser.username) {
       if (toast && toast.error) {
@@ -39,8 +39,8 @@ export default function FlashcardsPage() {
         console.log("Sets fetched:", JSON.stringify(data, null, 2));
         setSets(data);
         if (data.length > 0 && !selectedSetId) {
-          setSelectedSetId(data[0]._id); // Auto-select first set
-          handleSetSelect(data[0]._id); // Fetch flashcards for first set
+          setSelectedSetId(data[0]._id);
+          handleSetSelect(data[0]._id);
         }
       })
       .catch((err) => {
@@ -217,8 +217,8 @@ export default function FlashcardsPage() {
       if (toast && toast.success) {
         toast.success("Set created!");
       }
-      setSelectedSetId(data._id); // Auto-select new set
-      handleSetSelect(data._id); // Fetch flashcards for new set
+      setSelectedSetId(data._id);
+      handleSetSelect(data._id);
     } catch (err) {
       console.error("Set creation error:", err);
       if (toast && toast.error) {
@@ -334,7 +334,7 @@ export default function FlashcardsPage() {
   return (
     <ProtectedRoute>
       <div className="container mx-auto p-5 font-roboto-mono">
-        <Toaster /> {/* Render toasts */}
+        <Toaster />
         <h1 className="text-3xl font-bold mb-6">My Flashcards</h1>
         <div className="glass-effect p-6 rounded-2xl mb-6">
           <h2 className="text-xl font-semibold mb-4">My Sets</h2>
@@ -347,7 +347,7 @@ export default function FlashcardsPage() {
               className="btn glass-effect px-5 py-2 font-semibold transition-transform duration-200 hover:scale-105 disabled:opacity-50"
               disabled={loading || !selectedSetId}
             >
-              Update Set
+              Rename Set
             </button>
             <button
               onClick={deleteSet}
@@ -361,7 +361,7 @@ export default function FlashcardsPage() {
             <select
               value={selectedSetId || ""}
               onChange={(e) => handleSetSelect(e.target.value || null)}
-              className="px-4 py-2 rounded bg-black/30 focus:outline-none text-white font-roboto-mono w-full max-w-xs"
+              className="px-4 py-2 rounded focus:outline-none text-white font-roboto-mono w-full max-w-xs"
               disabled={loading}
             >
               <option value="">All Cards</option>
@@ -414,10 +414,11 @@ export default function FlashcardsPage() {
           ) : (
             flashcards.map((card) => (
               <div key={card._id} className="glass-effect p-4 rounded-2xl">
-                <h3 className="font-bold">{card.front}</h3>
-                <p>{card.back}</p>
-                <p className="text-sm text-gray-400">Set ID: {card.set_id}</p>
-                <div className="flex gap-2 mt-2">
+                <div className="mb-2">
+                  <p className="font-semibold">Front: {card.front}</p>
+                  <p>Back: {card.back}</p>
+                </div>
+                <div className="flex gap-2">
                   <button
                     onClick={() => handleEdit(card)}
                     className="btn glass-effect px-3 py-1 text-sm transition-transform duration-200 hover:scale-105"

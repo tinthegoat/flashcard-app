@@ -82,7 +82,6 @@ export default function Home() {
                     <div key={card._id} className="mt-1">
                       <p className="text-sm font-bold">{card.front}</p>
                       <p className="text-sm">{card.back}</p>
-                      <p className="text-xs text-gray-400">Tags: {card.tags.join(", ") || "None"}</p>
                     </div>
                   ))}
                 </div>

@@ -12,8 +12,8 @@ export async function GET(req) {
   let users;
 
   if (period === "all") {
-    // All-time leaderboard: sort by total score
-    users = await User.find({}).sort({ score: -1 }).limit(50); // top 50
+    // All-time leaderboard: sort by total score, filter score > 0
+    users = await User.find({ score: { $gt: 0 } }).sort({ score: -1 }).limit(50); // top 50
   } else {
     return new Response(JSON.stringify({ error: "Day/week filter not implemented yet" }), { status: 400 });
   }
@@ -24,6 +24,6 @@ export async function GET(req) {
     score: u.score
   }));
 
+  console.log("Leaderboard users fetched:", JSON.stringify(leaderboard, null, 2));
   return new Response(JSON.stringify(leaderboard), { status: 200 });
 }
-
