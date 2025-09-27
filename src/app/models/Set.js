@@ -1,4 +1,3 @@
-// src/app/models/Set.js
 import mongoose from "mongoose";
 
 const SetSchema = new mongoose.Schema({

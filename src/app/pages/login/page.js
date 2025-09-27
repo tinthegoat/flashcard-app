@@ -1,4 +1,3 @@
-// src/app/pages/login/page.js
 export const dynamic = "force-dynamic"; // forces no pre-rendering
 import LoginForm from "./loginForm"; // client component
 

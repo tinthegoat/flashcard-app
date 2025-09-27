@@ -1,4 +1,3 @@
-// src/app/pages/leaderboard/page.js
 "use client";
 
 import { useState, useEffect } from "react";

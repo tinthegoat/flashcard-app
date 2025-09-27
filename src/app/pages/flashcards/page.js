@@ -1,4 +1,3 @@
-// src/app/pages/flashcards/page.js
 "use client";
 
 import { useState, useEffect } from "react";
@@ -327,19 +326,19 @@ export default function FlashcardsPage() {
         <div className="glass-effect p-6 rounded-2xl mb-6">
           <h2 className="text-xl font-semibold mb-4">My Sets</h2>
           <div className="flex gap-2 mb-4">
-            <button onClick={createSet} className="btn glass-effect px-5 py-2 font-semibold transition-transform duration-200 hover:scale-105">
+            <button onClick={createSet} className="btn glass-effect px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm font-semibold transition-transform duration-200 hover:scale-105">
               Create New Set
             </button>
             <button
               onClick={updateSet}
-              className="btn glass-effect px-5 py-2 font-semibold transition-transform duration-200 hover:scale-105 disabled:opacity-50"
+              className="btn glass-effect px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm font-semibold transition-transform duration-200 hover:scale-105 disabled:opacity-50"
               disabled={loading || !selectedSetId}
             >
               Rename Set
             </button>
             <button
               onClick={deleteSet}
-              className="btn glass-effect px-5 py-2 font-semibold bg-red-500 transition-transform duration-200 hover:scale-105 disabled:opacity-50"
+              className="btn glass-effect px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm font-semibold bg-red-500 transition-transform duration-200 hover:scale-105 disabled:opacity-50"
               disabled={loading || !selectedSetId}
             >
               Delete Set

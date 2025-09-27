@@ -1,4 +1,3 @@
-// src/app/api/flashcards/route.js
 import { connectToDB } from "@/lib/mongodb";
 import Flashcard from "@/models/Flashcard";
 import Set from "@/models/Set";

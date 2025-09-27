@@ -1,4 +1,3 @@
-// src/app/api/score/route.js
 import { connectToDB } from "@/lib/mongodb";
 import User from "@/models/User";
 

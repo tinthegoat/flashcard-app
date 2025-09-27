@@ -1,4 +1,3 @@
-// src/app/pages/practice/page.js
 "use client";
 
 import { useState, useEffect, useCallback } from "react";

@@ -1,4 +1,3 @@
-// src/app/api/leaderboard/route.js
 import { connectToDB } from "@/lib/mongodb";
 import User from "@/models/User";
 
