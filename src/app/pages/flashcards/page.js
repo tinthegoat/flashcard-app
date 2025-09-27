@@ -38,9 +38,8 @@ export default function FlashcardsPage() {
       .then((data) => {
         console.log("Sets fetched:", JSON.stringify(data, null, 2));
         setSets(data);
-        if (data.length > 0 && !selectedSetId) {
-          setSelectedSetId(data[0]._id);
-          handleSetSelect(data[0]._id);
+        if (data.length > 0) {
+          handleSetSelect(null);
         }
       })
       .catch((err) => {
@@ -357,18 +356,28 @@ export default function FlashcardsPage() {
               Delete Set
             </button>
           </div>
-          <div className="flex items-center gap-2 mb-4">
-            <select
-              value={selectedSetId || ""}
-              onChange={(e) => handleSetSelect(e.target.value || null)}
-              className="px-4 py-2 rounded focus:outline-none text-white font-roboto-mono w-full max-w-xs"
+          <div className="flex flex-wrap items-center gap-2 mb-4 overflow-x-auto">
+            <button
+              className={`px-4 py-2 rounded font-roboto-mono transition-colors duration-200 ${
+                selectedSetId === null ? "bg-blue-500 text-white" : "bg-white/20"
+              }`}
+              onClick={() => handleSetSelect(null)}
               disabled={loading}
             >
-              <option value="">All Cards</option>
-              {sets.map((set) => (
-                <option key={set._id} value={set._id}>{set.name}</option>
-              ))}
-            </select>
+              All Cards
+            </button>
+            {sets.map((set) => (
+              <button
+                key={set._id}
+                className={`px-4 py-2 rounded font-roboto-mono transition-colors duration-200 ${
+                  selectedSetId === set._id ? "bg-blue-500 text-white" : "bg-white/20"
+                }`}
+                onClick={() => handleSetSelect(set._id)}
+                disabled={loading}
+              >
+                {set.name}
+              </button>
+            ))}
             {selectedSetId && (
               <button
                 onClick={() => toggleSetPublic(selectedSetId, sets.find(set => set._id === selectedSetId)?.isPublic)}
