@@ -1,4 +1,5 @@
 // src/app/api/user/route.js
+import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import crypto from "crypto";
@@ -10,17 +11,20 @@ function generateToken() {
 // POST: Sign Up
 export async function POST(req) {
   await connectToDB();
-  const { username, pin } = await req.json();
+  const { username, password } = await req.json();
 
-  if (!username) return new Response(JSON.stringify({ error: "Username is required" }), { status: 400 });
+  if (!username) return NextResponse.json({ error: "Username is required" }, { status: 400 });
 
   try {
     const token = generateToken();
-    const newUser = new User({ username, pin, token });
+    const newUser = new User({ username, password, token });
     await newUser.save();
-    return new Response(JSON.stringify({ username: newUser.username, token }), { status: 201 });
+    return NextResponse.json({ username: newUser.username, token }, { status: 201 });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.code === 11000 ? "Username already exists" : err.message }), { status: err.code === 11000 ? 409 : 500 });
+    return NextResponse.json(
+      { error: err.code === 11000 ? "Username already exists" : err.message },
+      { status: err.code === 11000 ? 409 : 500 }
+    );
   }
 }
 
@@ -29,17 +33,60 @@ export async function GET(req) {
   await connectToDB();
   const { searchParams } = new URL(req.url);
   const username = (searchParams.get("username") || "").trim();
-  const pin = (searchParams.get("pin") || "").trim();
+  const password = (searchParams.get("password") || "").trim();
 
-  if (!username) return new Response(JSON.stringify({ error: "Username required" }), { status: 400 });
+  if (!username) return NextResponse.json({ error: "Username required" }, { status: 400 });
 
   const user = await User.findOne({ username });
-  if (!user) return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
-  if (pin && user.pin !== pin) return new Response(JSON.stringify({ error: "Incorrect PIN" }), { status: 401 });
+  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+  if (password && user.password !== password) return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
 
   const token = generateToken();
   user.token = token;
   await user.save();
 
-  return new Response(JSON.stringify({ username: user.username, token }), { status: 200 });
+  return NextResponse.json({ username: user.username, token }, { status: 200 });
+}
+
+// PATCH: Update Username or Password
+export async function PATCH(req) {
+  await connectToDB();
+  const { user_id, username, oldPassword, password } = await req.json();
+
+  if (!user_id) {
+    return NextResponse.json({ error: "Missing user_id" }, { status: 400 });
+  }
+
+  try {
+    const user = await User.findOne({ username: user_id });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const updates = {};
+    if (username) {
+      const existingUser = await User.findOne({ username });
+      if (existingUser && existingUser.username !== user_id) {
+        return NextResponse.json({ error: "Username already exists" }, { status: 409 });
+      }
+      updates.username = username;
+    }
+    if (password) {
+      if (!oldPassword || user.password !== oldPassword) {
+        return NextResponse.json({ error: "Incorrect current password" }, { status: 401 });
+      }
+      updates.password = password;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: "No updates provided" }, { status: 400 });
+    }
+
+    await User.updateOne({ username: user_id }, { $set: updates });
+
+    return NextResponse.json({ username: updates.username || user.username }, { status: 200 });
+  } catch (error) {
+    console.error("User update error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
