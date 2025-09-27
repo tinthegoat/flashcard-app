@@ -19,7 +19,6 @@ export default function PracticePage() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("Initializing toast:", toast);
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     if (!storedUser.username) {
       if (toast && toast.error) {
@@ -31,14 +30,12 @@ export default function PracticePage() {
       return;
     }
     setLoading(true);
-    console.log("Fetching sets for user:", storedUser.username);
     fetch(`/studyflash/api/sets?user_id=${encodeURIComponent(storedUser.username)}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to fetch sets: ${res.status} ${res.statusText}`);
         return res.json();
       })
       .then((data) => {
-        console.log("Sets fetched:", JSON.stringify(data, null, 2));
         setSets(data);
         if (data.length > 0) {
           handleSetSelect(null);
@@ -85,14 +82,12 @@ export default function PracticePage() {
       } else {
         url = `/studyflash/api/flashcards?set_ids=${newSelectedSetIds.join(",")}`;
       }
-      console.log("Fetching flashcards with URL:", url);
       const res = await fetch(url);
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(`Failed to fetch flashcards: ${res.status} - ${errorData.error || res.statusText}`);
       }
       const data = await res.json();
-      console.log("Flashcards received:", JSON.stringify(data, null, 2));
       
       setFlashcards(data);
       setCurrentIndex(0);
@@ -120,7 +115,6 @@ export default function PracticePage() {
   const handleNext = (correct) => {
     if (flashcards.length === 0) return;
     const newAttempt = { flashcard_id: flashcards[currentIndex]._id, correct, time_taken: 0 };
-    console.log("Adding attempt:", JSON.stringify(newAttempt, null, 2));
     const updatedAttempts = [...attempts, newAttempt];
     setAttempts(updatedAttempts);
     setShowBack(false);
@@ -141,7 +135,6 @@ export default function PracticePage() {
       flashcards: attempts,
       correctCount
     };
-    console.log("Submitting practice attempt:", JSON.stringify(payload, null, 2));
     try {
       const res = await fetch(`/studyflash/api/practice`, {
         method: "POST",
@@ -183,7 +176,6 @@ export default function PracticePage() {
       }
       return;
     }
-    console.log("Opening practice modal");
     setIsModalOpen(true);
   };
 
@@ -195,7 +187,6 @@ export default function PracticePage() {
         if (!confirm("You have unsaved practice attempts. Close anyway?")) return;
       }
     }
-    console.log("Closing practice modal");
     setIsModalOpen(false);
     setShowBack(false);
     setCurrentIndex(0);
@@ -292,11 +283,6 @@ export default function PracticePage() {
               </p>
               {flashcards.length > 0 && !isSessionComplete && (
                 <>
-                  {console.log("Current flashcard:", {
-                    index: currentIndex,
-                    front: flashcards[currentIndex]?.front,
-                    back: flashcards[currentIndex]?.back
-                  })}
                   <div className="relative w-full h-48 perspective-1000 cursor-pointer" onClick={() => setShowBack(!showBack)}>
                     <div className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${showBack ? "rotate-y-180" : "rotate-y-0"}`}>
                       <div className={`absolute w-full h-full bg-blue-950 shadow-lg rounded-lg flex items-center justify-center p-6 text-blue-100 ${showBack ? "opacity-0" : "opacity-100"}`}>
@@ -330,7 +316,6 @@ export default function PracticePage() {
               )}
               {isSessionComplete && (
                 <div className="mt-4">
-                  <p className="mb-4">Session Complete! {attempts.filter(a => a.correct).length}/{flashcards.length} correct</p>
                   <button
                     className="btn glass-effect px-5 py-2 font-semibold bg-blue-500 transition-transform duration-200 hover:scale-105"
                     onClick={submitAttempt}

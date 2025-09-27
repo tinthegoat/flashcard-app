@@ -17,7 +17,6 @@ export default function FlashcardsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("Initializing toast:", toast);
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     if (!storedUser.username) {
       if (toast && toast.error) {
@@ -29,14 +28,12 @@ export default function FlashcardsPage() {
       return;
     }
     setLoading(true);
-    console.log("Fetching sets for user:", storedUser.username);
     fetch(`/studyflash/api/sets?user_id=${encodeURIComponent(storedUser.username)}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to fetch sets: ${res.status} ${res.statusText}`);
         return res.json();
       })
       .then((data) => {
-        console.log("Sets fetched:", JSON.stringify(data, null, 2));
         setSets(data);
         if (data.length > 0) {
           handleSetSelect(null);
@@ -65,14 +62,12 @@ export default function FlashcardsPage() {
       const url = setId
         ? `/studyflash/api/flashcards?set_id=${setId}`
         : `/studyflash/api/flashcards?user_id=${encodeURIComponent(storedUser.username)}`;
-      console.log("Fetching flashcards with URL:", url);
       const res = await fetch(url);
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(`Failed to fetch flashcards: ${res.status} - ${errorData.error || res.statusText}`);
       }
       const data = await res.json();
-      console.log("Flashcards received for set_id:", setId, JSON.stringify(data, null, 2));
       setFlashcards(data);
       if (data.length === 0 && setId) {
         setTimeout(() => {
@@ -123,7 +118,6 @@ export default function FlashcardsPage() {
       isPublic: false,
     };
     try {
-      console.log("Submitting flashcard with payload:", JSON.stringify(payload, null, 2));
       const url = editingId ? `/studyflash/api/flashcards` : `/studyflash/api/flashcards`;
       const method = editingId ? "PATCH" : "POST";
       const body = editingId ? { ...payload, flashcard_id: editingId } : payload;
@@ -166,7 +160,6 @@ export default function FlashcardsPage() {
   const handleDelete = async (flashcard_id) => {
     setLoading(true);
     try {
-      console.log("Deleting flashcard:", flashcard_id);
       const res = await fetch(`/studyflash/api/flashcards`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -204,7 +197,6 @@ export default function FlashcardsPage() {
     if (!name) return;
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     try {
-      console.log("Creating set:", { user_id: storedUser.username, name });
       const res = await fetch("/studyflash/api/sets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -241,7 +233,6 @@ export default function FlashcardsPage() {
     if (!name) return;
     setLoading(true);
     try {
-      console.log("Updating set:", { set_id: selectedSetId, name });
       const res = await fetch("/studyflash/api/sets", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -277,7 +268,6 @@ export default function FlashcardsPage() {
     if (!confirm("Are you sure you want to delete this set and all its flashcards?")) return;
     setLoading(true);
     try {
-      console.log("Deleting set:", selectedSetId);
       const res = await fetch("/studyflash/api/sets", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -306,7 +296,6 @@ export default function FlashcardsPage() {
   const toggleSetPublic = async (setId, currentIsPublic) => {
     setLoading(true);
     try {
-      console.log("Toggling set public:", { set_id: setId, isPublic: !currentIsPublic });
       const res = await fetch("/studyflash/api/sets", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },

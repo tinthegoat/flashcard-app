@@ -10,10 +10,8 @@ export default function LeaderboardPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log("Initializing toast:", toast);
     setLoading(true);
     const url = `/studyflash/api/leaderboard?period=all`;
-    console.log("Fetching leaderboard with URL:", url);
     fetch(url)
       .then((res) => {
         if (!res.ok) {
@@ -24,7 +22,6 @@ export default function LeaderboardPage() {
         return res.json();
       })
       .then((data) => {
-        console.log("Leaderboard users fetched:", JSON.stringify(data, null, 2));
         setLeaderboard(data);
       })
       .catch((err) => {
