@@ -1,10 +1,10 @@
-// src/app/pages/flashcards/page.js
+// src/app/pages/practice/page.js
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import toast, { Toaster } from "react-hot-toast"; // Default import with Toaster
+import toast, { Toaster } from "react-hot-toast";
 
 export default function PracticePage() {
   const [sets, setSets] = useState([]);
@@ -14,10 +14,12 @@ export default function PracticePage() {
   const [showBack, setShowBack] = useState(false);
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSessionComplete, setIsSessionComplete] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    console.log("Initializing toast:", toast); // Debug toast
+    console.log("Initializing toast:", toast);
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     if (!storedUser.username) {
       if (toast && toast.error) {
@@ -64,6 +66,8 @@ export default function PracticePage() {
     setCurrentIndex(0);
     setShowBack(false);
     setAttempts([]);
+    setIsModalOpen(false);
+    setIsSessionComplete(false);
     setLoading(true);
     try {
       const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
@@ -105,20 +109,29 @@ export default function PracticePage() {
 
   const handleNext = (correct) => {
     if (flashcards.length === 0) return;
-    setAttempts([...attempts, { flashcard_id: flashcards[currentIndex]._id, correct, time_taken: 0 }]);
+    const newAttempt = { flashcard_id: flashcards[currentIndex]._id, correct, time_taken: 0 };
+    console.log("Adding attempt:", JSON.stringify(newAttempt, null, 2));
+    const updatedAttempts = [...attempts, newAttempt];
+    setAttempts(updatedAttempts);
     setShowBack(false);
     if (currentIndex < flashcards.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      submitAttempt();
+      setIsSessionComplete(true);
     }
   };
 
   const submitAttempt = async () => {
     setLoading(true);
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
+    const correctCount = attempts.filter(a => a.correct).length;
+    console.log("Submitting practice attempt:", {
+      user_id: storedUser.username,
+      set_id: selectedSetIds.join(","),
+      flashcards: attempts,
+      correctCount
+    });
     try {
-      console.log("Submitting practice attempt:", { user_id: storedUser.username, set_id: selectedSetIds.join(","), flashcards: attempts });
       const res = await fetch(`/studyflash/api/practice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -129,13 +142,15 @@ export default function PracticePage() {
         throw new Error(data.error || `Failed to save attempt: ${res.status}`);
       }
       if (toast && toast.success) {
-        toast.success(`Practice session saved! Score updated (+${attempts.filter(a => a.correct).length} points)`);
+        toast.success(`Practice session saved! Score updated (+${correctCount} points)`);
       }
       setAttempts([]);
       setCurrentIndex(0);
       setShowBack(false);
       setSelectedSetIds([]);
       setFlashcards([]);
+      setIsModalOpen(false);
+      setIsSessionComplete(false);
     } catch (err) {
       console.error("Practice submit error:", err);
       if (toast && toast.error) {
@@ -148,10 +163,47 @@ export default function PracticePage() {
     }
   };
 
+  const handleStartPractice = () => {
+    if (selectedSetIds.length === 0) {
+      if (toast && toast.error) {
+        toast.error("Please select at least one set to start practice");
+      } else {
+        console.warn("Toast not initialized, skipping set selection error toast");
+      }
+      return;
+    }
+    if (flashcards.length === 0) {
+      if (toast && toast.error) {
+        toast.error("No flashcards in selected sets. Add some first!");
+      } else {
+        console.warn("Toast not initialized, skipping no flashcards error toast");
+      }
+      return;
+    }
+    console.log("Opening practice modal");
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    if (attempts.length > 0) {
+      if (isSessionComplete) {
+        if (!confirm("You've answered all cards but haven't submitted your answers. Close anyway?")) return;
+      } else {
+        if (!confirm("You have unsaved practice attempts. Close anyway?")) return;
+      }
+    }
+    console.log("Closing practice modal");
+    setIsModalOpen(false);
+    setShowBack(false);
+    setCurrentIndex(0);
+    setAttempts([]);
+    setIsSessionComplete(false);
+  };
+
   if (loading) {
     return (
       <ProtectedRoute>
-        <Toaster /> {/* Render toasts */}
+        <Toaster />
         <div className="flex justify-center items-center min-h-screen">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
@@ -162,7 +214,7 @@ export default function PracticePage() {
   if (sets.length === 0) {
     return (
       <ProtectedRoute>
-        <Toaster /> {/* Render toasts */}
+        <Toaster />
         <div className="container mx-auto p-5 font-roboto-mono">
           <h1 className="text-3xl font-bold mb-6">Practice Flashcards</h1>
           <p>No sets available. Create some in Flashcards!</p>
@@ -180,7 +232,7 @@ export default function PracticePage() {
   return (
     <ProtectedRoute>
       <div className="container mx-auto p-5 font-roboto-mono">
-        <Toaster /> {/* Render toasts */}
+        <Toaster />
         <h1 className="text-3xl font-bold mb-6">Practice Flashcards</h1>
         <div className="glass-effect p-6 rounded-2xl mb-6">
           <h2 className="text-xl font-semibold mb-4">Select Sets</h2>
@@ -214,15 +266,33 @@ export default function PracticePage() {
                   </button>
                 </div>
               ) : (
+                <button
+                  className="btn glass-effect px-5 py-2 font-semibold bg-green-500 transition-transform duration-200 hover:scale-105"
+                  onClick={handleStartPractice}
+                  disabled={loading}
+                >
+                  Start Practice
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="glass-effect p-6 rounded-2xl max-w-md w-full">
+              <h2 className="text-xl font-semibold mb-4">Practice Session</h2>
+              <p className="mb-4">
+                Session Score: {attempts.filter(a => a.correct).length}/{flashcards.length} correct
+              </p>
+              {flashcards.length > 0 && !isSessionComplete && (
                 <>
-                  <h2 className="text-xl font-semibold">{showBack ? flashcards[currentIndex].back : flashcards[currentIndex].front}</h2>
-                  <button
-                    className="btn glass-effect px-5 py-2 font-semibold mt-4 transition-transform duration-200 hover:scale-105"
+                  <div
+                    className="glass-effect p-6 rounded-2xl w-full cursor-pointer"
                     onClick={() => setShowBack(!showBack)}
-                    disabled={loading}
                   >
-                    {showBack ? "Show Front" : "Show Back"}
-                  </button>
+                    <p>{showBack ? flashcards[currentIndex].back : flashcards[currentIndex].front}</p>
+                  </div>
                   {showBack && (
                     <div className="flex gap-4 mt-4">
                       <button
@@ -244,9 +314,28 @@ export default function PracticePage() {
                   <p className="mt-4 text-sm">Card {currentIndex + 1} of {flashcards.length}</p>
                 </>
               )}
+              {isSessionComplete && (
+                <div className="mt-4">
+                  <p className="mb-4">Session Complete! {attempts.filter(a => a.correct).length}/{flashcards.length} correct</p>
+                  <button
+                    className="btn glass-effect px-5 py-2 font-semibold bg-blue-500 transition-transform duration-200 hover:scale-105"
+                    onClick={submitAttempt}
+                    disabled={loading}
+                  >
+                    Submit Answers
+                  </button>
+                </div>
+              )}
+              <button
+                className="btn glass-effect px-5 py-2 font-semibold mt-4 transition-transform duration-200 hover:scale-105"
+                onClick={handleCloseModal}
+                disabled={loading}
+              >
+                Close
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </ProtectedRoute>
   );
