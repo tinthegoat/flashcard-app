@@ -67,7 +67,7 @@ pnpm install
 - **Code structure**: split into models, API routes, components, and pages.
 - **Models**: Attempt, Flashcard, Set, User
 - **Authentication**: ProtectedRoute Wrapper for session using token
-- **Future Improvements**: NextAuth, Markdown, more features
+- **Future Improvements**: NextAuth, Markdown, Rating system for public sets, and more
 ### API Routes
 
 #### User & Authentication
