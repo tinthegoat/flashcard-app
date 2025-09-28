@@ -27,14 +27,18 @@ export default function Home() {
               const res = await fetch(`${apiBase}/flashcards?set_id=${set._id}`);
               if (!res.ok) throw new Error(`Failed to fetch flashcards for set ${set._id}`);
               const flashcards = await res.json();
-              return { ...set, flashcards: flashcards.slice(0, 2) };
+              return { 
+                ...set, 
+                flashcards: flashcards.slice(0, 2), // Limit to 2 for display
+                flashcardCount: flashcards.length // Store total count
+              };
             } catch (err) {
               console.error(`Error fetching flashcards for set ${set._id}:`, err);
-              return { ...set, flashcards: [] };
+              return { ...set, flashcards: [], flashcardCount: 0 };
             }
           })
         );
-        const nonEmptySets = setsWithFlashcards.filter(set => set.flashcards.length > 0);
+        const nonEmptySets = setsWithFlashcards.filter(set => set.flashcardCount > 0);
         setPublicSets(nonEmptySets);
       })
       .catch((err) => {
@@ -173,7 +177,7 @@ export default function Home() {
               >
                 <h3 className="font-bold text-lg">{set.name}</h3>
                 <p className="text-sm text-gray-400">Created by: {set.user_id}</p>
-                <p className="text-sm text-gray-400">Flashcards: {set.flashcards.length}</p>
+                <p className="text-sm text-gray-400">Flashcards: {set.flashcardCount}</p>
                 <div className="mt-2">
                   <p className="text-sm font-semibold">Sample Flashcards:</p>
                   {set.flashcards.map((card) => (

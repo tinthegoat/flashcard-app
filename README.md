@@ -1,6 +1,6 @@
 # StudyFlash
 
-StudyFlash is a full-stack web application that helps students create, manage, and practice flashcards. The app is designed to make learning more interactive with user-friendly features, responsive design, and persistent storage using MongoDB.
+StudyFlash is a full-stack web application that helps students create, manage, and practice flashcards. The app is designed to make learning more interactive with user-friendly features, responsive design, and persistent storage.
 
 ## https://wad-6632004.eastus.cloudapp.azure.com/studyflash
 ---
@@ -43,7 +43,7 @@ StudyFlash is a full-stack web application that helps students create, manage, a
 - **Backend**: Next.js API Routes
 - **Database**: MongoDB Atlas (Mongoose ODM)
 - **Auth**: Token-based session handling
-- **Deployment**: Vercel, and VM
+- **Deployment**: Azure VM with PM2 and Nginx reverse-proxy method
 
 ---
 
@@ -51,7 +51,7 @@ StudyFlash is a full-stack web application that helps students create, manage, a
 
 ### 1. Clone the Repository
 ```
-git clone https://github.com/your-username/studyflash.git
+git clone https://github.com/thethegoat/studyflash.git
 cd studyflash
 ```
 
@@ -66,7 +66,8 @@ pnpm install
 - **Features**: user authentication, CRUD functionality, practice mode, responsive UI, persistent DB.
 - **Code structure**: split into models, API routes, components, and pages.
 - **Models**: Attempt, Flashcard, Set, User
-
+- **Authentication**: ProtectedRoute Wrapper for session using token
+- **Future Improvements**: NextAuth, Markdown, more features
 ### API Routes
 
 #### User & Authentication
