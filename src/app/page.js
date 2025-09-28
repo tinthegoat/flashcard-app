@@ -27,8 +27,8 @@ export default function Home() {
               const res = await fetch(`${apiBase}/flashcards?set_id=${set._id}`);
               if (!res.ok) throw new Error(`Failed to fetch flashcards for set ${set._id}`);
               const flashcards = await res.json();
-              return { 
-                ...set, 
+              return {
+                ...set,
                 flashcards: flashcards.slice(0, 2), // Limit to 2 for display
                 flashcardCount: flashcards.length // Store total count
               };
