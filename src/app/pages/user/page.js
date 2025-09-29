@@ -91,6 +91,11 @@ export default function UserPage() {
     router.push("/pages/login");
   };
 
+  // Generate avatar initials
+  const getInitials = (username) => {
+    return username ? username.slice(0, 2).toUpperCase() : "??";
+  };
+
   return (
     <ProtectedRoute>
       <div className="flex flex-col items-center justify-center min-h-screen px-5">
@@ -98,13 +103,22 @@ export default function UserPage() {
         <div className="glass-effect rounded-2xl p-8 w-full max-w-md text-center">
           <h1 className="text-3xl font-bold font-roboto-mono mb-6">User Profile</h1>
           {loading ? (
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+            <div className="flex justify-center items-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
+            </div>
           ) : (
             <>
               <p className="text-lg font-roboto-mono mb-5">
                 Logged in as: <span className="font-semibold">{userData.username}</span>
               </p>
               <div className="flex flex-col gap-4">
+
+              <div className="flex justify-center mb-6">
+                <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-2xl font-bold text-white font-roboto-mono">
+                  {getInitials(userData.username)}
+                </div>
+              </div>
+
                 <div className="flex justify-center">
                   <button
                     onClick={handleEditUsername}
