@@ -20,11 +20,10 @@ export default function RootLayout({ children }) {
       <body className={`${inter.variable} antialiased`}>
         <div className="flex min-h-screen flex-col p-5 animated-bg">
           <Navbar />
-          <main className="min-h-screen">{children}</main>
-          <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+          <Toaster toastOptions={{ duration: 1000 }} />
+          <main className="min-h-dvh">{children}</main>
           <Footer />
         </div>
-
       </body>
     </html>
   );

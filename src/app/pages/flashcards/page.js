@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function FlashcardsPage() {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
@@ -18,34 +18,20 @@ export default function FlashcardsPage() {
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
-    if (!storedUser.username) {
-      if (toast && toast.error) {
-        toast.error("Please login to manage flashcards");
-      } else {
-        console.warn("Toast not initialized, skipping login error toast");
-      }
-      router.push("/pages/login");
-      return;
-    }
+    if (!storedUser.username) return;
     setLoading(true);
     fetch(`${apiBase}/sets?user_id=${encodeURIComponent(storedUser.username)}`)
       .then((res) => {
-        if (!res.ok) throw new Error(`Failed to fetch sets: ${res.status} ${res.statusText}`);
+        if (!res.ok) throw new Error(`Failed to fetch sets: ${res.status}`);
         return res.json();
       })
       .then((data) => {
         setSets(data);
-        if (data.length > 0) {
-          handleSetSelect(null);
-        }
+        if (data.length > 0) handleSetSelect(null);
       })
       .catch((err) => {
         console.error("Sets fetch error:", err);
-        if (toast && toast.error) {
-          toast.error(err.message);
-        } else {
-          console.warn("Toast not initialized, skipping sets error toast");
-        }
+        toast.error(err.message, { id: "sets-error" });
       })
       .finally(() => setLoading(false));
   }, [router]);
@@ -71,20 +57,12 @@ export default function FlashcardsPage() {
       setFlashcards(data);
       if (data.length === 0 && setId) {
         setTimeout(() => {
-          if (toast && toast.success) {
-            toast.success("No flashcards in this set. Add some!", { icon: "ℹ️" });
-          } else {
-            console.warn("Toast not initialized, skipping no flashcards toast");
-          }
+          toast.success("No flashcards in this set. Add some!", { id: "no-flashcards", icon: "ℹ️" });
         }, 100);
       }
     } catch (err) {
       console.error("Flashcards fetch error:", err);
-      if (toast && toast.error) {
-        toast.error(err.message);
-      } else {
-        console.warn("Toast not initialized, skipping flashcards error toast");
-      }
+      toast.error(err.message, { id: "flashcards-error" });
     } finally {
       setLoading(false);
     }
@@ -93,19 +71,11 @@ export default function FlashcardsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedSetId) {
-      if (toast && toast.error) {
-        toast.error("Please select a set");
-      } else {
-        console.warn("Toast not initialized, skipping set selection error toast");
-      }
+      toast.error("Please select a set", { id: "set-selection-error" });
       return;
     }
     if (!front || !back) {
-      if (toast && toast.error) {
-        toast.error("Please fill in both front and back fields");
-      } else {
-        console.warn("Toast not initialized, skipping fields error toast");
-      }
+      toast.error("Please fill in both front and back fields", { id: "fields-error" });
       return;
     }
     setLoading(true);
@@ -133,25 +103,17 @@ export default function FlashcardsPage() {
 
       if (editingId) {
         setFlashcards(flashcards.map((card) => (card._id === editingId ? data : card)));
-        if (toast && toast.success) {
-          toast.success("Flashcard updated!");
-        }
+        toast.success("Flashcard updated!", { id: "flashcard-update-success" });
         setEditingId(null);
       } else {
         setFlashcards([...flashcards, data]);
-        if (toast && toast.success) {
-          toast.success("Flashcard created!");
-        }
+        toast.success("Flashcard created!", { id: "flashcard-create-success" });
       }
       setFront("");
       setBack("");
     } catch (err) {
       console.error("Flashcard submit error:", err);
-      if (toast && toast.error) {
-        toast.error(err.message);
-      } else {
-        console.warn("Toast not initialized, skipping submit error toast");
-      }
+      toast.error(err.message, { id: "flashcard-submit-error" });
     } finally {
       setLoading(false);
     }
@@ -170,16 +132,10 @@ export default function FlashcardsPage() {
       if (!res.ok) throw new Error(data.error || `Failed to delete flashcard: ${res.status}`);
 
       setFlashcards(flashcards.filter((card) => card._id !== flashcard_id));
-      if (toast && toast.success) {
-        toast.success("Flashcard deleted!");
-      }
+      toast.success("Flashcard deleted!", { id: "flashcard-delete-success" });
     } catch (err) {
       console.error("Flashcard delete error:", err);
-      if (toast && toast.error) {
-        toast.error(err.message);
-      } else {
-        console.warn("Toast not initialized, skipping delete error toast");
-      }
+      toast.error(err.message, { id: "flashcard-delete-error" });
     } finally {
       setLoading(false);
     }
@@ -205,28 +161,18 @@ export default function FlashcardsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Failed to create set: ${res.status}`);
       setSets([...sets, data]);
-      if (toast && toast.success) {
-        toast.success("Set created!");
-      }
+      toast.success("Set created!", { id: "set-create-success" });
       setSelectedSetId(data._id);
       handleSetSelect(data._id);
     } catch (err) {
       console.error("Set creation error:", err);
-      if (toast && toast.error) {
-        toast.error(err.message);
-      } else {
-        console.warn("Toast not initialized, skipping set creation error toast");
-      }
+      toast.error(err.message, { id: "set-create-error" });
     }
   };
 
   const updateSet = async () => {
     if (!selectedSetId) {
-      if (toast && toast.error) {
-        toast.error("Please select a set to update");
-      } else {
-        console.warn("Toast not initialized, skipping set update error toast");
-      }
+      toast.error("Please select a set to update", { id: "set-update-error" });
       return;
     }
     const name = prompt("Enter new set name:", sets.find(set => set._id === selectedSetId)?.name);
@@ -241,16 +187,10 @@ export default function FlashcardsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Failed to update set: ${res.status}`);
       setSets(sets.map(set => (set._id === selectedSetId ? { ...set, name } : set)));
-      if (toast && toast.success) {
-        toast.success("Set updated!");
-      }
+      toast.success("Set updated!", { id: "set-update-success" });
     } catch (err) {
       console.error("Set update error:", err);
-      if (toast && toast.error) {
-        toast.error(err.message);
-      } else {
-        console.warn("Toast not initialized, skipping set update error toast");
-      }
+      toast.error(err.message, { id: "set-update-error" });
     } finally {
       setLoading(false);
     }
@@ -258,11 +198,7 @@ export default function FlashcardsPage() {
 
   const deleteSet = async () => {
     if (!selectedSetId) {
-      if (toast && toast.error) {
-        toast.error("Please select a set to delete");
-      } else {
-        console.warn("Toast not initialized, skipping set delete error toast");
-      }
+      toast.error("Please select a set to delete", { id: "set-delete-error" });
       return;
     }
     if (!confirm("Are you sure you want to delete this set and all its flashcards?")) return;
@@ -278,16 +214,10 @@ export default function FlashcardsPage() {
       setSets(sets.filter(set => set._id !== selectedSetId));
       setFlashcards([]);
       setSelectedSetId(null);
-      if (toast && toast.success) {
-        toast.success("Set deleted!");
-      }
+      toast.success("Set deleted!", { id: "set-delete-success" });
     } catch (err) {
       console.error("Set delete error:", err);
-      if (toast && toast.error) {
-        toast.error(err.message);
-      } else {
-        console.warn("Toast not initialized, skipping set delete error toast");
-      }
+      toast.error(err.message, { id: "set-delete-error" });
     } finally {
       setLoading(false);
     }
@@ -304,16 +234,10 @@ export default function FlashcardsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Failed to update set: ${res.status}`);
       setSets(sets.map((set) => (set._id === setId ? { ...set, isPublic: !currentIsPublic } : set)));
-      if (toast && toast.success) {
-        toast.success(`Set ${!currentIsPublic ? "made public" : "made private"}!`);
-      }
+      toast.success(`Set ${!currentIsPublic ? "made public" : "made private"}!`, { id: "set-public-toggle-success" });
     } catch (err) {
       console.error("Set public toggle error:", err);
-      if (toast && toast.error) {
-        toast.error(err.message);
-      } else {
-        console.warn("Toast not initialized, skipping toggle error toast");
-      }
+      toast.error(err.message, { id: "set-public-toggle-error" });
     } finally {
       setLoading(false);
     }
@@ -322,7 +246,6 @@ export default function FlashcardsPage() {
   return (
     <ProtectedRoute>
       <div className="container mx-auto p-5 font-roboto-mono">
-        <Toaster />
         <h1 className="text-3xl font-bold mb-6">My Flashcards</h1>
         <div className="glass-effect p-6 rounded-2xl mb-6">
           <h2 className="text-xl font-semibold mb-4">My Sets</h2>

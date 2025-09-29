@@ -1,9 +1,8 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function Home() {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
@@ -17,7 +16,7 @@ export default function Home() {
     setLoading(true);
     fetch(`${apiBase}/sets?public=true`)
       .then((res) => {
-        if (!res.ok) throw new Error(`Failed to fetch public sets: ${res.status} ${res.statusText}`);
+        if (!res.ok) throw new Error(`Failed to fetch public sets: ${res.status}`);
         return res.json();
       })
       .then(async (sets) => {
@@ -29,8 +28,8 @@ export default function Home() {
               const flashcards = await res.json();
               return {
                 ...set,
-                flashcards: flashcards.slice(0, 2), // Limit to 2 for display
-                flashcardCount: flashcards.length // Store total count
+                flashcards: flashcards.slice(0, 2),
+                flashcardCount: flashcards.length
               };
             } catch (err) {
               console.error(`Error fetching flashcards for set ${set._id}:`, err);
@@ -43,11 +42,7 @@ export default function Home() {
       })
       .catch((err) => {
         console.error("Public sets fetch error:", err);
-        if (toast && toast.error) {
-          toast.error(err.message);
-        } else {
-          console.warn("Toast not initialized, skipping public sets error toast");
-        }
+        toast.error(err.message, { id: "public-sets-error" });
       })
       .finally(() => setLoading(false));
   }, []);
@@ -62,11 +57,7 @@ export default function Home() {
       setIsModalOpen(true);
     } catch (err) {
       console.error("Flashcards fetch error for modal:", err);
-      if (toast && toast.error) {
-        toast.error(err.message);
-      } else {
-        console.warn("Toast not initialized, skipping modal flashcards error toast");
-      }
+      toast.error(err.message, { id: "modal-flashcards-error" });
     } finally {
       setLoading(false);
     }
@@ -80,18 +71,13 @@ export default function Home() {
   const handleSaveSet = async () => {
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
     if (!storedUser.username) {
-      if (toast && toast.error) {
-        toast.error("Please login to save this set");
-      } else {
-        console.warn("Toast not initialized, skipping login error toast");
-      }
+      toast.error("Please login to save this set", { id: "auth-error" });
       router.push("/pages/login");
       return;
     }
 
     setLoading(true);
     try {
-      // Create new set
       const setPayload = {
         user_id: storedUser.username,
         name: `${selectedSet.name} (by ${selectedSet.user_id})`,
@@ -105,7 +91,6 @@ export default function Home() {
       const setData = await setRes.json();
       if (!setRes.ok) throw new Error(setData.error || `Failed to create set: ${setRes.status}`);
 
-      // Copy flashcards
       const flashcardPromises = selectedSet.flashcards.map((card) => {
         const flashcardPayload = {
           user_id: storedUser.username,
@@ -129,18 +114,12 @@ export default function Home() {
       });
 
       await Promise.all(flashcardPromises);
-      if (toast && toast.success) {
-        toast.success("Set saved successfully!");
-      }
+      toast.success("Set saved successfully!", { id: "save-set-success" });
       handleCloseModal();
       router.push("/pages/flashcards");
     } catch (err) {
       console.error("Save set error:", err);
-      if (toast && toast.error) {
-        toast.error(err.message);
-      } else {
-        console.warn("Toast not initialized, skipping save set error toast");
-      }
+      toast.error(err.message, { id: "save-set-error" });
     } finally {
       setLoading(false);
     }
@@ -148,7 +127,6 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-5 font-roboto-mono">
-      <Toaster />
       <div className="px-5">
         <div className="text-4xl font-bold mb-5 mt-10">
           Create your own flash cards and practice for better grades.

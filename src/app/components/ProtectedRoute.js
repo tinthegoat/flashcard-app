@@ -1,7 +1,7 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function ProtectedRoute({ children }) {
   const [loading, setLoading] = useState(true);
@@ -10,14 +10,14 @@ export default function ProtectedRoute({ children }) {
   useEffect(() => {
     const user = localStorage.getItem("flashUser");
     if (!user) {
+      toast.error("Please login to access this page", { id: "auth-error" });
       router.push("/pages/login");
     } else {
-      setLoading(false); // allow rendering
+      setLoading(false);
     }
   }, [router]);
 
-  if (loading) return null; // or a spinner
+  if (loading) return null;
 
   return <>{children}</>;
 }
-

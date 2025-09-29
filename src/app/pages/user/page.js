@@ -1,9 +1,8 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function UserPage() {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
@@ -13,11 +12,7 @@ export default function UserPage() {
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
-    if (!storedUser.username) {
-      toast.error("Please login to view user profile");
-      router.push("/pages/login");
-      return;
-    }
+    if (!storedUser.username) return; // Handled by ProtectedRoute
     setLoading(true);
     fetch(`${apiBase}/user?username=${encodeURIComponent(storedUser.username)}`)
       .then((res) => {
@@ -28,7 +23,7 @@ export default function UserPage() {
         username: data.username,
         score: data.score || 0
       }))
-      .catch((err) => toast.error(err.message))
+      .catch((err) => toast.error(err.message, { id: "user-fetch-error" }))
       .finally(() => setLoading(false));
   }, [router]);
 
@@ -50,10 +45,10 @@ export default function UserPage() {
       const data = await res.json();
       setUserData({ ...userData, username: data.username });
       localStorage.setItem("flashUser", JSON.stringify({ ...storedUser, username: data.username }));
-      toast.success("Username updated!");
+      toast.success("Username updated!", { id: "username-success" });
     } catch (err) {
       console.error("Username update error:", err);
-      toast.error(err.message);
+      toast.error(err.message, { id: "username-error" });
     } finally {
       setLoading(false);
     }
@@ -76,10 +71,10 @@ export default function UserPage() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || `Failed to update password: ${res.status}`);
       }
-      toast.success("Password updated!");
+      toast.success("Password updated!", { id: "password-success" });
     } catch (err) {
       console.error("Password update error:", err);
-      toast.error(err.message);
+      toast.error(err.message, { id: "password-error" });
     } finally {
       setLoading(false);
     }
@@ -87,24 +82,34 @@ export default function UserPage() {
 
   const handleLogout = () => {
     localStorage.removeItem("flashUser");
-    toast.success("Logged out successfully");
+    toast.success("Logged out successfully", { id: "logout-success" });
     router.push("/pages/login");
+  };
+
+  const getInitials = (username) => {
+    return username ? username.slice(0, 2).toUpperCase() : "??";
   };
 
   return (
     <ProtectedRoute>
       <div className="flex flex-col items-center justify-center min-h-screen px-5">
-        <Toaster />
         <div className="glass-effect rounded-2xl p-8 w-full max-w-md text-center">
           <h1 className="text-3xl font-bold font-roboto-mono mb-6">User Profile</h1>
           {loading ? (
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+            <div className="flex justify-center items-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
+            </div>
           ) : (
             <>
               <p className="text-lg font-roboto-mono mb-5">
                 Logged in as: <span className="font-semibold">{userData.username}</span>
               </p>
               <div className="flex flex-col gap-4">
+                <div className="flex justify-center mb-6">
+                  <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-2xl font-bold text-white font-roboto-mono">
+                    {getInitials(userData.username)}
+                  </div>
+                </div>
                 <div className="flex justify-center">
                   <button
                     onClick={handleEditUsername}

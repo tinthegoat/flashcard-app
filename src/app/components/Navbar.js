@@ -10,7 +10,7 @@ export default function Navbar() {
   const mobileRef = useRef(null);
   const desktopRef = useRef(null);
 
-  // Close dropdown when click outside
+  // close dropdown when click outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (mobileRef.current && !mobileRef.current.contains(event.target)) {

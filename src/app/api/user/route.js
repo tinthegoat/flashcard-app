@@ -9,7 +9,6 @@ function generateToken() {
   return crypto.randomBytes(32).toString("hex");
 }
 
-// POST: Sign Up
 export async function POST(req) {
   await connectToDB();
   const { username, password } = await req.json();
@@ -29,7 +28,6 @@ export async function POST(req) {
   }
 }
 
-// GET: Login
 export async function GET(req) {
   await connectToDB();
   const { searchParams } = new URL(req.url);
