@@ -1,9 +1,8 @@
 "use client";
-
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function PracticePage() {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
@@ -20,52 +19,29 @@ export default function PracticePage() {
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
-    if (!storedUser.username) {
-      if (toast && toast.error) {
-        toast.error("Please login to practice flashcards");
-      } else {
-        console.warn("Toast not initialized, skipping login error toast");
-      }
-      router.push("/pages/login");
-      return;
-    }
+    if (!storedUser.username) return; // Handled by ProtectedRoute
     setLoading(true);
     fetch(`${apiBase}/sets?user_id=${encodeURIComponent(storedUser.username)}`)
       .then((res) => {
-        if (!res.ok) throw new Error(`Failed to fetch sets: ${res.status} ${res.statusText}`);
+        if (!res.ok) throw new Error(`Failed to fetch sets: ${res.status}`);
         return res.json();
       })
       .then((data) => {
         setSets(data);
-        if (data.length > 0) {
-          handleSetSelect(null);
-        }
+        if (data.length > 0) handleSetSelect(null);
       })
       .catch((err) => {
         console.error("Sets fetch error:", err);
-        if (toast && toast.error) {
-          toast.error(err.message);
-        } else {
-          console.warn("Toast not initialized, skipping sets error toast");
-        }
+        toast.error(err.message, { id: "sets-error" });
       })
       .finally(() => setLoading(false));
   }, [router]);
 
   const handleSetSelect = useCallback(async (setId) => {
-    let newSelectedSetIds;
-    if (setId === null) {
-      newSelectedSetIds = [];
-    } else if (selectedSetIds.includes(setId)) {
-      newSelectedSetIds = selectedSetIds.filter((id) => id !== setId);
-    } else {
-      newSelectedSetIds = [...selectedSetIds, setId];
-    }
-
+    let newSelectedSetIds = setId === null ? [] : selectedSetIds.includes(setId) ? selectedSetIds.filter((id) => id !== setId) : [...selectedSetIds, setId];
     setSelectedSetIds(newSelectedSetIds);
     setIsModalOpen(false);
     setIsSessionComplete(false);
-
     if (newSelectedSetIds.length === 0 && setId !== null) {
       setFlashcards([]);
       setCurrentIndex(0);
@@ -73,42 +49,27 @@ export default function PracticePage() {
       setAttempts([]);
       return;
     }
-
     try {
       const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
-      let url;
-      if (newSelectedSetIds.length === 0) {
-        url = `${apiBase}/flashcards?user_id=${encodeURIComponent(storedUser.username)}`;
-      } else {
-        url = `${apiBase}/flashcards?set_ids=${newSelectedSetIds.join(",")}`;
-      }
+      const url = newSelectedSetIds.length === 0 ? `${apiBase}/flashcards?user_id=${encodeURIComponent(storedUser.username)}` : `${apiBase}/flashcards?set_ids=${newSelectedSetIds.join(",")}`;
       const res = await fetch(url);
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(`Failed to fetch flashcards: ${res.status} - ${errorData.error || res.statusText}`);
       }
       const data = await res.json();
-      
       setFlashcards(data);
       setCurrentIndex(0);
       setShowBack(false);
       setAttempts([]);
       if (data.length === 0 && newSelectedSetIds.length > 0) {
         setTimeout(() => {
-          if (toast && toast.success) {
-            toast.success("No flashcards in selected sets. Add some first!", { icon: "ℹ️" });
-          } else {
-            console.warn("Toast not initialized, skipping no flashcards toast");
-          }
+          toast.success("No flashcards in selected sets. Add some first!", { id: "no-flashcards", icon: "ℹ️" });
         }, 100);
       }
     } catch (err) {
       console.error("Flashcards fetch error:", err);
-      if (toast && toast.error) {
-        toast.error(err.message);
-      } else {
-        console.warn("Toast not initialized, skipping flashcards error toast");
-      }
+      toast.error(err.message, { id: "flashcards-error" });
     }
   }, [selectedSetIds]);
 
@@ -143,11 +104,9 @@ export default function PracticePage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Failed to save attempt: ${res.status} ${res.statusText}`);
+        throw new Error(data.error || `Failed to save attempt: ${res.status}`);
       }
-      if (toast && toast.success) {
-        toast.success(`Practice session saved! Score updated (+${correctCount} points)`);
-      }
+      toast.success(`Practice session saved! Score updated (+${correctCount} points)`, { id: "practice-success" });
       setAttempts([]);
       setCurrentIndex(0);
       setShowBack(false);
@@ -157,11 +116,7 @@ export default function PracticePage() {
       setIsSessionComplete(false);
     } catch (err) {
       console.error("Practice submit error:", err);
-      if (toast && toast.error) {
-        toast.error(err.message);
-      } else {
-        console.warn("Toast not initialized, skipping submit error toast");
-      }
+      toast.error(err.message, { id: "practice-error" });
     } finally {
       setLoading(false);
     }
@@ -169,11 +124,7 @@ export default function PracticePage() {
 
   const handleStartPractice = () => {
     if (flashcards.length === 0) {
-      if (toast && toast.error) {
-        toast.error("No flashcards available. Add some in Flashcards!");
-      } else {
-        console.warn("Toast not initialized, skipping no flashcards error toast");
-      }
+      toast.error("No flashcards available. Add some in Flashcards!", { id: "no-flashcards-error" });
       return;
     }
     setIsModalOpen(true);
@@ -184,7 +135,7 @@ export default function PracticePage() {
       if (isSessionComplete) {
         if (!confirm("You've answered all cards but haven't submitted your answers. Close anyway?")) return;
       } else {
-        if (!confirm("You have unsaved practice attempts. Close anyway?")) return;
+        if (!confirm("You have unsaved Chichewa practice attempts. Close anyway?")) return;
       }
     }
     setIsModalOpen(false);
@@ -197,7 +148,6 @@ export default function PracticePage() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <Toaster />
         <div className="flex justify-center items-center min-h-screen">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
@@ -208,7 +158,6 @@ export default function PracticePage() {
   if (sets.length === 0) {
     return (
       <ProtectedRoute>
-        <Toaster />
         <div className="container mx-auto p-5 font-roboto-mono">
           <h1 className="text-3xl font-bold mb-6">Practice Flashcards</h1>
           <p>No sets available. Create some in Flashcards!</p>
@@ -226,7 +175,6 @@ export default function PracticePage() {
   return (
     <ProtectedRoute>
       <div className="container mx-auto p-5 font-roboto-mono">
-        <Toaster />
         <h1 className="text-3xl font-bold mb-6">Practice Flashcards</h1>
         <div className="glass-effect p-6 rounded-2xl mb-6">
           <h2 className="text-xl font-semibold mb-4">Select Sets</h2>

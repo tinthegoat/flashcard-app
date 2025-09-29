@@ -6,11 +6,18 @@ import { useState, useRef, useEffect } from "react";
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(false);
+  const [username, setUsername] = useState("");
 
   const mobileRef = useRef(null);
   const desktopRef = useRef(null);
 
-  // Close dropdown when click outside
+  // get username from localStorage
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("flashUser") || "{}");
+    setUsername(storedUser.username || "");
+  }, []);
+
+  // close dropdown when click outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (mobileRef.current && !mobileRef.current.contains(event.target)) {
@@ -24,7 +31,10 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // CSS classes for reuse because Tailwind is verbose and such a pain to copy paste every single timeeeeee so annoying
+  const getInitials = (username) => {
+    return username ? username.slice(0, 2).toUpperCase() : "??";
+  };
+
   const menuItemClass =
     "px-4 py-2 hover:bg-white/20 rounded-2xl transition-colors duration-200 font-roboto-mono";
 
@@ -46,10 +56,13 @@ export default function Navbar() {
           <Link href="/pages/practice" className="px-4">Practice</Link>
         </div>
 
-        {/* Desktop Hamburger */}
-        <div className="relative" ref={desktopRef}>
+        {/* Desktop Avatar and Hamburger */}
+        <div className="relative flex items-center gap-3" ref={desktopRef}>
+          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-lg font-bold text-white font-roboto-mono">
+            {getInitials(username)}
+          </div>
           <div
-            className="px-4 py-1 glass-effect transition-transform duration-200 hover:scale-110 rounded flex items-center cursor-pointer "
+            className="px-4 py-1 glass-effect transition-transform duration-200 hover:scale-110 rounded flex items-center cursor-pointer"
             onClick={() => setDesktopOpen(!desktopOpen)}
           >
             ☰
@@ -67,8 +80,11 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Hamburger */}
-      <div className="sm:hidden relative" ref={mobileRef}>
+      {/* Mobile Avatar and Hamburger */}
+      <div className="sm:hidden relative flex items-center gap-3" ref={mobileRef}>
+        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-lg font-bold text-white font-roboto-mono">
+          {getInitials(username)}
+        </div>
         <div
           className="px-3 py-1 glass-effect transition-transform duration-200 hover:scale-110 rounded cursor-pointer flex items-center"
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -76,7 +92,7 @@ export default function Navbar() {
           ☰
         </div>
         {mobileOpen && (
-          <div className={dropdownClass} >
+          <div className={dropdownClass}>
             <Link href="/pages/flashcards" className={menuItemClass} onClick={() => setMobileOpen(false)}>
               My Flashcards
             </Link>

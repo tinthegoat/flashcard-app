@@ -1,8 +1,7 @@
 "use client";
-
 import { useState, useEffect } from "react";
-import { Toaster, toast } from "react-hot-toast";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import toast from "react-hot-toast";
 
 export default function LeaderboardPage() {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
@@ -11,8 +10,7 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     setLoading(true);
-    const url = `${apiBase}/leaderboard?period=all`;
-    fetch(url)
+    fetch(`${apiBase}/leaderboard?period=all`)
       .then((res) => {
         if (!res.ok) {
           return res.json().then((data) => {
@@ -21,16 +19,10 @@ export default function LeaderboardPage() {
         }
         return res.json();
       })
-      .then((data) => {
-        setLeaderboard(data);
-      })
+      .then((data) => setLeaderboard(data))
       .catch((err) => {
         console.error("Leaderboard fetch error:", err.message);
-        if (toast && toast.error) {
-          toast.error(err.message);
-        } else {
-          console.warn("Toast not initialized, skipping leaderboard error toast");
-        }
+        toast.error(err.message, { id: "leaderboard-error" });
       })
       .finally(() => setLoading(false));
   }, []);
@@ -38,7 +30,6 @@ export default function LeaderboardPage() {
   return (
     <ProtectedRoute>
       <div className="container mx-auto p-5 font-roboto-mono">
-        <Toaster />
         <h1 className="text-3xl font-bold mb-6">Leaderboard</h1>
         <div className="glass-effect p-6 rounded-2xl">
           <h2 className="text-xl font-semibold mb-4">Top Users</h2>

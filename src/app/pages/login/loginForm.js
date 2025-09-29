@@ -1,9 +1,7 @@
 "use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
-import toast, { Toaster } from "react-hot-toast";
+import { useRouter, useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/studyflash/api';
@@ -20,26 +18,22 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     const payload = { username: username.trim(), password: password.trim() };
     if (!payload.username) {
       setError("Username is required");
       setLoading(false);
       return;
     }
-
     try {
       const res = await fetch(isSignup ? `${apiBase}/user` : `${apiBase}/user?${new URLSearchParams(payload).toString()}`, {
         method: isSignup ? "POST" : "GET",
         headers: { "Content-Type": "application/json" },
         body: isSignup ? JSON.stringify(payload) : undefined,
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Auth failed");
-
       localStorage.setItem("flashUser", JSON.stringify({ username: data.username, token: data.token }));
-      router.push(redirectPath); // redirect after login/signup
+      router.push(redirectPath);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -65,10 +59,10 @@ export default function LoginPage() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || `Failed to update password: ${res.status}`);
       }
-      toast.success("Password updated!");
+      toast.success("Password updated!", { id: "password-success" });
     } catch (err) {
       console.error("Password update error:", err);
-      toast.error(err.message);
+      toast.error(err.message, { id: "password-error" });
     } finally {
       setLoading(false);
     }
@@ -76,7 +70,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-5">
-      <Toaster />
       <div className="glass-effect rounded-2xl p-8 w-full max-w-md">
         <h1 className="text-3xl font-bold font-roboto-mono mb-6 text-center">{isSignup ? "Sign Up" : "Login"}</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
