@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get("redirect") || "/pages/flashcards";
+  const redirectPath = searchParams.get("redirect") || "/";
 
   async function handleSubmit(e) {
     e.preventDefault();
