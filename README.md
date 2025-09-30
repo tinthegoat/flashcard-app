@@ -7,9 +7,9 @@ StudyFlash is a full-stack web application that helps students create, manage, a
 
 ## Members
 
-- Nyunt Tin - https://github.com/tinthegoat/flashcard-app
-- Pyae Phyo Nandar Oo
-- Phanthira Kositjaroenkul
+- Nyunt Tin - https://github.com/tinthegoat
+- Pyae Phyo Nandar Oo - https://github.com/ppndo
+- Phanthira Kositjaroenkul - https://github.com/MeiliAsa14
 
 ---
 
@@ -18,10 +18,12 @@ StudyFlash is a full-stack web application that helps students create, manage, a
 - **User Authentication**
   - Sign up, log in, and session tokens
   - Update username and password securely
+  - Admin branch can delete users (Only 1 admin exists)
 
 - **Flashcard Sets**
   - Create, rename, and delete sets
-  - Each set belongs to a specific user
+  - Each set belongs to a specific user, but can be marked as public
+  - Shared public sets
 
 - **Flashcards**
   - Add, edit, and delete flashcards within sets
@@ -29,10 +31,11 @@ StudyFlash is a full-stack web application that helps students create, manage, a
 
 - **Practice Mode**
   - Go through flashcards for active recall
+  - User-friendly and fun card flips
 
 - **Leaderboard**
   - Track user performance
-  - Compare with other users
+  - Compete with other users
 
 - **Navbar**
   - Mobile and desktop responsive dropdown menus
@@ -42,7 +45,7 @@ StudyFlash is a full-stack web application that helps students create, manage, a
 - **Frontend**: Next.js 13 (App Router), React, Tailwind CSS
 - **Backend**: Next.js API Routes
 - **Database**: MongoDB Atlas (Mongoose ODM)
-- **Auth**: Token-based session handling
+- **Auth**: Token-based session handling on localstorage
 - **Deployment**: Azure VM with PM2 and Nginx reverse-proxy method
 
 ---
@@ -61,12 +64,12 @@ pnpm install
 ```
 ---
 
-## Notes for Teacher
+## Notes
 
 - **Features**: user authentication, CRUD functionality, practice mode, responsive UI, persistent DB.
 - **Code structure**: split into models, API routes, components, and pages.
-- **Models**: Attempt, Flashcard, Set, User
-- **Authentication**: ProtectedRoute Wrapper for session using token
+- **Models**: 4 Models -> **Attempt, Flashcard, Set, User**
+- **Authentication**: **ProtectedRoute** Wrapper for session using token
 - **Future Improvements**: NextAuth, Markdown, Rating system for public sets, and more
 ### API Routes
 
